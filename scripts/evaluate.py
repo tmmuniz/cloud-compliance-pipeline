@@ -33,8 +33,11 @@ def run_opa(plan_path: str, rego_path: str, check: str) -> bool:
         return False
 
 
-def normalize_frameworks(raw: str) -> list[str]:
-    return [item.strip().upper() for item in raw.split(",") if item.strip()]
+def normalize_frameworks(raw: str, available_frameworks: list[str]) -> list[str]:
+    selected = [item.strip().upper() for item in raw.split(",") if item.strip()]
+    if len(selected) == 1 and selected[0] == "ALL":
+        return available_frameworks
+    return selected
 
 
 def main() -> None:
@@ -42,17 +45,17 @@ def main() -> None:
     parser.add_argument("--plan", required=True, help="Terraform plan JSON path.")
     parser.add_argument("--controls", required=True, help="Controls YAML path.")
     parser.add_argument("--rego", default="policy/compliance.rego", help="OPA/Rego policy path.")
-    parser.add_argument("--frameworks", required=True, help="Comma-separated framework list.")
+    parser.add_argument("--framework", required=True, help="Comma-separated framework list or ALL.")
     parser.add_argument("--output", required=True, help="Output JSON file.")
     args = parser.parse_args()
-
-    selected_frameworks = normalize_frameworks(args.frameworks)
 
     with open(args.controls, "r", encoding="utf-8") as file:
         controls = yaml.safe_load(file)
 
     templates = controls["framework_templates"]
     points = controls["severity_points"]
+    available_frameworks = list(templates.keys())
+    selected_frameworks = normalize_frameworks(args.framework, available_frameworks)
 
     unknown = [fw for fw in selected_frameworks if fw not in templates]
     if unknown:

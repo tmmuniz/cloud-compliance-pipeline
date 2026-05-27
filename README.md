@@ -30,11 +30,7 @@ Each framework contains 15 mapped audit items:
 ## Architecture
 
 ```text
-AWS Terraform code
-      ↓
-terraform plan
-      ↓
-terraform show -json
+User-provided Terraform plan JSON input
       ↓
 OPA/Rego reusable checks
       ↓
@@ -43,18 +39,21 @@ Framework control mapping
 JSON + HTML compliance report
 ```
 
-## How the user provides Terraform code
+## How the user provides the Terraform plan JSON
 
-The user places or uploads the AWS Terraform code into the selected Terraform directory in the repository.
+The user provides the Terraform plan JSON directly in the GitHub Actions workflow input named `TFPLAN_JSON`.
 
-By default, the pipeline audits the `terraform/` directory, but this can be changed when manually starting the workflow through the `terraform_directory` input.
+This means the Terraform code can be created, edited, or generated outside this repository, including from an AWS-based environment. The pipeline receives only the generated `tfplan.json` content and audits it with OPA/Rego.
 
-Example:
+Example local command to generate the JSON before pasting it into the workflow input:
 
-```text
-terraform_directory = terraform
-frameworks = LGPD,ISO27001,NIST_CSF
+```bash
+terraform init
+terraform plan -out=tfplan
+terraform show -json tfplan > tfplan.json
 ```
+
+Then paste the full content of `tfplan.json` into the workflow input `TFPLAN_JSON`.
 
 ## How to run in GitHub Actions
 
@@ -63,15 +62,16 @@ frameworks = LGPD,ISO27001,NIST_CSF
 3. Go to **Actions**.
 4. Select **Cloud Compliance Pipeline**.
 5. Click **Run workflow**.
-6. Choose one or more frameworks.
-7. Download the generated HTML report from the workflow artifacts.
+6. In `FRAMEWORK`, choose `ALL` or one or more frameworks separated by comma.
+7. In `TFPLAN_JSON`, paste the full Terraform plan JSON content.
+8. Download the generated HTML report from the workflow artifacts.
 
-## Example framework input
+## Example `FRAMEWORK` input
 
 Run all frameworks:
 
 ```text
-GDPR,NIST_CSF,CIS,ISO27001,PCI_DSS,SOC2,MITRE,LGPD,BACEN
+ALL
 ```
 
 Run only Brazilian and ISO/NIST frameworks:
@@ -88,7 +88,7 @@ policy/compliance.rego             Single reusable OPA policy file
 policy/controls.yaml               Framework-to-control mapping
 scripts/evaluate.py                OPA evaluator and scoring engine
 scripts/render_html.py             HTML report generator
-terraform/                         Example AWS Terraform code
+terraform/                         Optional sample AWS Terraform code
 reports/                           Generated reports
 ```
 
@@ -153,7 +153,7 @@ chmod +x opa
 sudo mv opa /usr/local/bin/opa
 ```
 
-Generate a Terraform plan JSON:
+Generate a Terraform plan JSON locally:
 
 ```bash
 cd terraform
@@ -170,7 +170,7 @@ python scripts/evaluate.py \
   --plan tfplan.json \
   --controls policy/controls.yaml \
   --rego policy/compliance.rego \
-  --frameworks "LGPD,ISO27001,NIST_CSF" \
+  --framework "LGPD,ISO27001,NIST_CSF" \
   --output reports/results.json
 ```
 
@@ -191,3 +191,13 @@ Suggested description:
 ## Important note
 
 This project is designed for portfolio, educational, and architecture demonstration purposes. The framework mappings are simplified technical mappings and should not be treated as a formal legal, regulatory, or audit certification opinion.
+
+
+## GitHub Actions inputs
+
+| Input | Description | Example |
+|---|---|---|
+| `FRAMEWORK` | Framework selection. Use `ALL` or a comma-separated list. | `ALL` |
+| `TFPLAN_JSON` | Full Terraform plan JSON content to audit. | `{ "format_version": "..." }` |
+
+All project-level input variables used by the workflow are written in uppercase.
