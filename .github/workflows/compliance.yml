@@ -20,6 +20,7 @@ env:
   ARN_OIDC_TERRAFORM: ${{ vars.ARN_OIDC_TERRAFORM }}
   TF_VAR_AWS_REGION: ${{ vars.AWS_REGION }}
   TF_IN_AUTOMATION: "true"
+  OPA_VERSION: v1.0.0
 
 jobs:
   compliance_pipeline:
@@ -49,7 +50,7 @@ jobs:
 
       - name: Setup OPA
         run: |
-          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          curl -L -o opa "https://openpolicyagent.org/downloads/${OPA_VERSION}/opa_linux_amd64_static"
           chmod +x opa
           sudo mv opa /usr/local/bin/opa
           opa version
