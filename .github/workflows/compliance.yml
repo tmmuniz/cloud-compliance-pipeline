@@ -8,19 +8,6 @@ on:
         required: true
         default: "ALL"
         type: string
-      AWS_REGION:
-        description: "AWS region used to initialize Terraform and render the plan"
-        required: true
-        default: "us-east-1"
-        type: string
-      TERRAFORM_STATE_BUCKET:
-        description: "S3 bucket name used to store the Terraform state file"
-        required: true
-        type: string
-      ARN_OIDC:
-        description: "AWS IAM Role ARN assumed by GitHub Actions through OIDC"
-        required: true
-        type: string
 
 permissions:
   contents: read
