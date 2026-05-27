@@ -70,10 +70,19 @@ def run_opa(plan_path: str, check: str) -> bool:
         return False
 
 
+def build_related_frameworks(frameworks_map: dict) -> dict[str, list[str]]:
+    related = defaultdict(set)
+    for framework, items in frameworks_map.items():
+        for item in items:
+            related[item["control"]].add(framework)
+    return {control: sorted(frameworks) for control, frameworks in related.items()}
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate Terraform plan JSON against framework controls using OPA/Rego.")
+    parser = argparse.ArgumentParser(description="Evaluate Terraform plan JSON against framework mappings using OPA/Rego.")
     parser.add_argument("--plan", required=True, help="Path to Terraform plan JSON file.")
-    parser.add_argument("--controls", required=True, help="Path to controls YAML file.")
+    parser.add_argument("--controls", required=True, help="Path to technical controls catalog YAML file.")
+    parser.add_argument("--frameworks", required=True, help="Path to framework-to-control mapping YAML file.")
     parser.add_argument("--framework", required=True, help="Framework selector: ALL or comma-separated framework names.")
     parser.add_argument("--output", required=True, help="Path to output JSON results file.")
     args = parser.parse_args()
@@ -84,12 +93,12 @@ def main() -> None:
     selected_frameworks = normalize_frameworks(args.framework)
 
     with open(args.controls, "r", encoding="utf-8") as file:
-        controls_file = yaml.safe_load(file)
+        controls_catalog = yaml.safe_load(file)["controls"]
 
-    controls = [
-        control for control in controls_file["controls"]
-        if control["framework"].upper() in selected_frameworks
-    ]
+    with open(args.frameworks, "r", encoding="utf-8") as file:
+        frameworks_map = yaml.safe_load(file)["frameworks"]
+
+    related_by_control = build_related_frameworks(frameworks_map)
 
     results = []
     framework_summary = defaultdict(lambda: {"achieved_score": 0, "total_score": 0, "passed": 0, "failed": 0})
@@ -98,36 +107,42 @@ def main() -> None:
     total_score = 0
     achieved_score = 0
 
-    for control in controls:
-        severity = control["severity"].upper()
-        score = int(control.get("score", POINTS[severity]))
-        passed = run_opa(args.plan, control["check"])
+    for framework in selected_frameworks:
+        for item in frameworks_map.get(framework, []):
+            control_id = item["control"]
+            control = controls_catalog[control_id]
+            severity = item["severity"].upper()
+            score = int(item.get("score", POINTS[severity]))
+            passed = run_opa(args.plan, control["check"])
 
-        total_score += score
-        framework_summary[control["framework"]]["total_score"] += score
-        severity_summary[severity]["total_score"] += score
+            total_score += score
+            framework_summary[framework]["total_score"] += score
+            severity_summary[severity]["total_score"] += score
 
-        if passed:
-            achieved_score += score
-            framework_summary[control["framework"]]["achieved_score"] += score
-            framework_summary[control["framework"]]["passed"] += 1
-            severity_summary[severity]["achieved_score"] += score
-            severity_summary[severity]["passed"] += 1
-        else:
-            framework_summary[control["framework"]]["failed"] += 1
-            severity_summary[severity]["failed"] += 1
+            if passed:
+                achieved_score += score
+                framework_summary[framework]["achieved_score"] += score
+                framework_summary[framework]["passed"] += 1
+                severity_summary[severity]["achieved_score"] += score
+                severity_summary[severity]["passed"] += 1
+            else:
+                framework_summary[framework]["failed"] += 1
+                severity_summary[severity]["failed"] += 1
 
-        results.append({
-            "id": control["id"],
-            "framework": control["framework"],
-            "related_frameworks": control.get("related_frameworks", []),
-            "severity": severity,
-            "score": score,
-            "title": control["title"],
-            "check": control["check"],
-            "passed": passed,
-            "status": "PASS" if passed else "FAIL",
-        })
+            results.append({
+                "id": item["id"],
+                "framework": framework,
+                "control": control_id,
+                "related_frameworks": related_by_control.get(control_id, []),
+                "severity": severity,
+                "score": score,
+                "requirement": item.get("requirement", control["title"]),
+                "title": control["title"],
+                "description": control.get("description", ""),
+                "check": control["check"],
+                "passed": passed,
+                "status": "PASS" if passed else "FAIL",
+            })
 
     for summary in framework_summary.values():
         summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
@@ -143,7 +158,7 @@ def main() -> None:
         "final_score_percent": round((achieved_score / total_score) * 100, 2) if total_score else 0,
         "framework_summary": dict(sorted(framework_summary.items())),
         "severity_summary": dict(sorted(severity_summary.items())),
-        "results": results,
+        "results": sorted(results, key=lambda item: (item["framework"], item["id"])),
     }
 
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)

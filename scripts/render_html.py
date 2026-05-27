@@ -2,6 +2,7 @@
 import argparse
 import html
 import json
+from collections import defaultdict
 from pathlib import Path
 
 
@@ -12,6 +13,35 @@ def badge(status: str) -> str:
 
 def pct(value: float) -> str:
     return f"{value:.2f}%"
+
+
+def grouped_controls(results: list[dict]) -> list[dict]:
+    grouped = {}
+    for item in results:
+        control_id = item["control"]
+        if control_id not in grouped:
+            grouped[control_id] = {
+                "control": control_id,
+                "title": item["title"],
+                "check": item["check"],
+                "frameworks": set(),
+                "statuses": [],
+                "highest_severity": "LOW",
+            }
+        grouped[control_id]["frameworks"].add(item["framework"])
+        grouped[control_id]["statuses"].append(item["status"])
+        if item["severity"] == "HIGH":
+            grouped[control_id]["highest_severity"] = "HIGH"
+        elif item["severity"] == "MEDIUM" and grouped[control_id]["highest_severity"] != "HIGH":
+            grouped[control_id]["highest_severity"] = "MEDIUM"
+
+    rows = []
+    for item in grouped.values():
+        item["frameworks"] = sorted(item["frameworks"])
+        item["status"] = "PASS" if all(status == "PASS" for status in item["statuses"]) else "FAIL"
+        item["usage_count"] = len(item["statuses"])
+        rows.append(item)
+    return sorted(rows, key=lambda item: (item["status"], item["control"]))
 
 
 def main() -> None:
@@ -36,6 +66,21 @@ def main() -> None:
         </tr>
         """
 
+    relationship_rows = ""
+    for item in grouped_controls(data["results"]):
+        frameworks = ", ".join(item["frameworks"])
+        relationship_rows += f"""
+        <tr>
+          <td><code>{html.escape(item['control'])}</code></td>
+          <td>{html.escape(item['title'])}</td>
+          <td>{html.escape(frameworks)}</td>
+          <td>{item['usage_count']}</td>
+          <td class="severity {html.escape(item['highest_severity'].lower())}">{html.escape(item['highest_severity'])}</td>
+          <td><code>{html.escape(item['check'])}</code></td>
+          <td>{badge(item['status'])}</td>
+        </tr>
+        """
+
     result_rows = ""
     for item in data["results"]:
         related = ", ".join(item.get("related_frameworks", []))
@@ -43,9 +88,11 @@ def main() -> None:
         <tr>
           <td>{html.escape(item['id'])}</td>
           <td>{html.escape(item['framework'])}</td>
+          <td><code>{html.escape(item['control'])}</code></td>
           <td>{html.escape(related)}</td>
           <td class="severity {html.escape(item['severity'].lower())}">{html.escape(item['severity'])}</td>
           <td>{item['score']}</td>
+          <td>{html.escape(item.get('requirement', item['title']))}</td>
           <td>{html.escape(item['title'])}</td>
           <td><code>{html.escape(item['check'])}</code></td>
           <td>{badge(item['status'])}</td>
@@ -74,41 +121,12 @@ def main() -> None:
       margin-bottom: 24px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }}
-    .score {{
-      font-size: 32px;
-      font-weight: 700;
-      margin: 8px 0;
-    }}
-    table {{
-      width: 100%;
-      border-collapse: collapse;
-      background: #ffffff;
-      font-size: 14px;
-    }}
-    th {{
-      background: #24292f;
-      color: #ffffff;
-      text-align: left;
-      position: sticky;
-      top: 0;
-    }}
-    th, td {{
-      border: 1px solid #d0d7de;
-      padding: 10px;
-      vertical-align: top;
-    }}
-    code {{
-      background: #f6f8fa;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }}
-    .badge {{
-      border-radius: 999px;
-      color: white;
-      display: inline-block;
-      font-weight: 700;
-      padding: 4px 10px;
-    }}
+    .score {{ font-size: 32px; font-weight: 700; margin: 8px 0; }}
+    table {{ width: 100%; border-collapse: collapse; background: #ffffff; font-size: 14px; }}
+    th {{ background: #24292f; color: #ffffff; text-align: left; position: sticky; top: 0; }}
+    th, td {{ border: 1px solid #d0d7de; padding: 10px; vertical-align: top; }}
+    code {{ background: #f6f8fa; padding: 2px 5px; border-radius: 4px; }}
+    .badge {{ border-radius: 999px; color: white; display: inline-block; font-weight: 700; padding: 4px 10px; }}
     .pass {{ background: #1a7f37; }}
     .fail {{ background: #cf222e; }}
     .severity.high {{ color: #cf222e; font-weight: 700; }}
@@ -122,23 +140,27 @@ def main() -> None:
     <h1>Cloud Compliance Pipeline Report</h1>
     <p class="meta">Selected frameworks: {html.escape(', '.join(data['selected_frameworks']))}</p>
     <div class="score">Final Score: {pct(data['final_score_percent'])}</div>
-    <p>{data['achieved_score']} of {data['total_score']} points achieved across {data['total_controls']} controls.</p>
+    <p>{data['achieved_score']} of {data['total_score']} points achieved across {data['total_controls']} framework control items.</p>
   </div>
 
   <div class="card">
     <h2>Score by Framework</h2>
     <table>
       <thead>
-        <tr>
-          <th>Framework</th>
-          <th>Passed</th>
-          <th>Failed</th>
-          <th>Achieved Points</th>
-          <th>Total Points</th>
-          <th>Score</th>
-        </tr>
+        <tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Achieved Points</th><th>Total Points</th><th>Score</th></tr>
       </thead>
       <tbody>{framework_rows}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Control Relationships Across Frameworks</h2>
+    <p class="meta">This table is generated by matching the same technical control ID from frameworks.yaml to controls.yaml.</p>
+    <table>
+      <thead>
+        <tr><th>Technical Control</th><th>Control Title</th><th>Related Frameworks in This Run</th><th>Mapped Items</th><th>Highest Severity</th><th>OPA/Rego Check</th><th>Status</th></tr>
+      </thead>
+      <tbody>{relationship_rows}</tbody>
     </table>
   </div>
 
@@ -146,16 +168,7 @@ def main() -> None:
     <h2>Detailed Audit Results</h2>
     <table>
       <thead>
-        <tr>
-          <th>Item</th>
-          <th>Framework</th>
-          <th>Related Frameworks</th>
-          <th>Severity</th>
-          <th>Points</th>
-          <th>Control Item</th>
-          <th>OPA/Rego Check</th>
-          <th>Status</th>
-        </tr>
+        <tr><th>Item</th><th>Framework</th><th>Technical Control</th><th>All Related Frameworks</th><th>Severity</th><th>Points</th><th>Framework Requirement</th><th>Control Item</th><th>OPA/Rego Check</th><th>Status</th></tr>
       </thead>
       <tbody>{result_rows}</tbody>
     </table>

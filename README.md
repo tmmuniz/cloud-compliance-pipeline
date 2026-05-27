@@ -190,3 +190,42 @@ This project demonstrates:
 Suggested LinkedIn/GitHub description:
 
 > Compliance-as-Code pipeline for AWS Terraform plans using OPA/Rego, GitHub Actions OIDC, and multi-framework control mapping across GDPR, LGPD, NIST CSF, CIS Controls, ISO 27001, PCI DSS, SOC 2, MITRE ATT&CK, BACEN, and Open Finance.
+
+
+## Policy data model
+
+The project separates the technical control catalog from framework mappings:
+
+```text
+policy/
+├── controls.yaml      # Reusable technical controls and the OPA/Rego check name
+├── frameworks.yaml    # Framework-specific items mapped to technical controls
+└── compliance.rego    # Single DRY Rego policy package
+```
+
+`controls.yaml` defines one technical control only once. `frameworks.yaml` maps each framework item to a reusable control ID. The HTML report uses this relationship to show which frameworks are related to the same technical control.
+
+Example:
+
+```yaml
+# controls.yaml
+controls:
+  S3_ENCRYPTED:
+    title: S3 Encrypted
+    check: s3_encrypted
+
+# frameworks.yaml
+frameworks:
+  LGPD:
+    - id: LGPD-H01
+      control: S3_ENCRYPTED
+      severity: HIGH
+      score: 5
+  GDPR:
+    - id: GDPR-H01
+      control: S3_ENCRYPTED
+      severity: HIGH
+      score: 5
+```
+
+The consolidated HTML report then lists `S3_ENCRYPTED` as one technical control related to both LGPD and GDPR.
