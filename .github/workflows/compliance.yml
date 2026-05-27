@@ -4,29 +4,41 @@ on:
   workflow_dispatch:
     inputs:
       FRAMEWORK:
-        description: "Frameworks: ALL or GDPR,NIST_CSF,CIS,ISO27001,PCI_DSS,SOC2,MITRE,LGPD,BACEN"
+        description: "Framework to run: ALL, GDPR, NIST_CSF, CIS, ISO27001, PCI_DSS, SOC2, MITRE, LGPD, BACEN, OPEN_FINANCE"
         required: true
         default: "ALL"
-      TFPLAN_JSON:
-        description: "Terraform plan JSON content generated from AWS Terraform code"
+        type: string
+      AWS_REGION:
+        description: "AWS region used only to render the Terraform plan"
         required: true
-        default: "{}"
+        default: "us-east-1"
+        type: string
 
 permissions:
   contents: read
 
+env:
+  FRAMEWORK: ${{ github.event.inputs.FRAMEWORK }}
+
 jobs:
-  compliance-audit:
-    name: Compliance audit with OPA/Rego
+  audit_gdpr:
+    name: GDPR Compliance Audit
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'GDPR') }}
 
     env:
-      FRAMEWORK: ${{ github.event.inputs.FRAMEWORK }}
-      TFPLAN_JSON: ${{ github.event.inputs.TFPLAN_JSON }}
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -36,33 +48,726 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install OPA
+      - name: Setup OPA
         run: |
           curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
           chmod +x opa
           sudo mv opa /usr/local/bin/opa
           opa version
 
-      - name: Create tfplan.json from GitHub Actions input
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
         run: |
-          python scripts/write_tfplan_from_env.py             --env-var TFPLAN_JSON             --output tfplan.json
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
 
-      - name: Validate tfplan.json
-        run: python -m json.tool tfplan.json > /dev/null
-
-      - name: Run compliance evaluation
+      - name: Run GDPR OPA compliance evaluation
         run: |
-          python scripts/evaluate.py             --plan tfplan.json             --controls policy/controls.yaml             --rego policy/compliance.rego             --framework "$FRAMEWORK"             --output reports/results.json
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "GDPR" \
+            --output reports/results-gdpr.json
 
-      - name: Generate HTML report
+      - name: Generate GDPR HTML compliance report
         run: |
-          python scripts/render_html.py             --input reports/results.json             --output reports/compliance-report.html
+          python3 scripts/render_html.py \
+            --input reports/results-gdpr.json \
+            --output reports/compliance-report-gdpr.html
 
-      - name: Upload compliance report
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload GDPR HTML report artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: compliance-report
-          path: |
-            reports/compliance-report.html
-            reports/results.json
-            tfplan.json
+          name: cloud-compliance-report-gdpr
+          path: reports/compliance-report-gdpr.html
+          if-no-files-found: ignore
+  audit_nist_csf:
+    name: NIST_CSF Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'NIST_CSF') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run NIST_CSF OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "NIST_CSF" \
+            --output reports/results-nist-csf.json
+
+      - name: Generate NIST_CSF HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-nist-csf.json \
+            --output reports/compliance-report-nist-csf.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload NIST_CSF HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-nist-csf
+          path: reports/compliance-report-nist-csf.html
+          if-no-files-found: ignore
+  audit_cis:
+    name: CIS Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'CIS') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run CIS OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "CIS" \
+            --output reports/results-cis.json
+
+      - name: Generate CIS HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-cis.json \
+            --output reports/compliance-report-cis.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload CIS HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-cis
+          path: reports/compliance-report-cis.html
+          if-no-files-found: ignore
+  audit_iso27001:
+    name: ISO27001 Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'ISO27001') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run ISO27001 OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "ISO27001" \
+            --output reports/results-iso27001.json
+
+      - name: Generate ISO27001 HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-iso27001.json \
+            --output reports/compliance-report-iso27001.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload ISO27001 HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-iso27001
+          path: reports/compliance-report-iso27001.html
+          if-no-files-found: ignore
+  audit_pci_dss:
+    name: PCI_DSS Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'PCI_DSS') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run PCI_DSS OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "PCI_DSS" \
+            --output reports/results-pci-dss.json
+
+      - name: Generate PCI_DSS HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-pci-dss.json \
+            --output reports/compliance-report-pci-dss.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload PCI_DSS HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-pci-dss
+          path: reports/compliance-report-pci-dss.html
+          if-no-files-found: ignore
+  audit_soc2:
+    name: SOC2 Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'SOC2') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run SOC2 OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "SOC2" \
+            --output reports/results-soc2.json
+
+      - name: Generate SOC2 HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-soc2.json \
+            --output reports/compliance-report-soc2.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload SOC2 HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-soc2
+          path: reports/compliance-report-soc2.html
+          if-no-files-found: ignore
+  audit_mitre:
+    name: MITRE Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'MITRE') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run MITRE OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "MITRE" \
+            --output reports/results-mitre.json
+
+      - name: Generate MITRE HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-mitre.json \
+            --output reports/compliance-report-mitre.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload MITRE HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-mitre
+          path: reports/compliance-report-mitre.html
+          if-no-files-found: ignore
+  audit_lgpd:
+    name: LGPD Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'LGPD') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run LGPD OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "LGPD" \
+            --output reports/results-lgpd.json
+
+      - name: Generate LGPD HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-lgpd.json \
+            --output reports/compliance-report-lgpd.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload LGPD HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-lgpd
+          path: reports/compliance-report-lgpd.html
+          if-no-files-found: ignore
+  audit_bacen:
+    name: BACEN Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'BACEN') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run BACEN OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "BACEN" \
+            --output reports/results-bacen.json
+
+      - name: Generate BACEN HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-bacen.json \
+            --output reports/compliance-report-bacen.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload BACEN HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-bacen
+          path: reports/compliance-report-bacen.html
+          if-no-files-found: ignore
+  audit_open_finance:
+    name: OPEN_FINANCE Compliance Audit
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.FRAMEWORK == 'ALL' || contains(github.event.inputs.FRAMEWORK, 'OPEN_FINANCE') }}
+
+    env:
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init without remote backend
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON locally in runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run OPEN_FINANCE OPA compliance evaluation
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py \
+            --plan tfplan.json \
+            --controls policy/controls.yaml \
+            --framework "OPEN_FINANCE" \
+            --output reports/results-open-finance.json
+
+      - name: Generate OPEN_FINANCE HTML compliance report
+        run: |
+          python3 scripts/render_html.py \
+            --input reports/results-open-finance.json \
+            --output reports/compliance-report-open-finance.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload OPEN_FINANCE HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report-open-finance
+          path: reports/compliance-report-open-finance.html
+          if-no-files-found: ignore
