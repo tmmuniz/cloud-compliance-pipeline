@@ -11,6 +11,7 @@ terraform {
   # Backend configuration is intentionally partial.
   # GitHub Actions injects the bucket name at runtime through TERRAFORM_STATE_BUCKET.
   backend "s3" {}
+}
 
 provider "aws" {
   region = var.AWS_REGION
