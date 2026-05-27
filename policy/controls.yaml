@@ -1,0 +1,151 @@
+controls:
+  S3_PUBLIC_BLOCK_ENABLED:
+    title: S3 Public Block Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      S3 Public Block Enabled.'
+    check: s3_public_block_enabled
+  S3_ENCRYPTED:
+    title: S3 Encrypted
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      S3 Encrypted.'
+    check: s3_encrypted
+  KMS_KEY_ROTATION_ENABLED:
+    title: Kms Key Rotation Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Kms Key Rotation Enabled.'
+    check: kms_key_rotation_enabled
+  IAM_NO_ADMIN_POLICY:
+    title: Iam No Admin Policy
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Iam No Admin Policy.'
+    check: iam_no_admin_policy
+  CLOUDTRAIL_ENABLED:
+    title: Cloudtrail Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Cloudtrail Enabled.'
+    check: cloudtrail_enabled
+  CLOUDTRAIL_MULTI_REGION_ENABLED:
+    title: Cloudtrail Multi Region Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Cloudtrail Multi Region Enabled.'
+    check: cloudtrail_multi_region_enabled
+  CLOUDTRAIL_LOG_VALIDATION_ENABLED:
+    title: Cloudtrail Log Validation Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Cloudtrail Log Validation Enabled.'
+    check: cloudtrail_log_validation_enabled
+  GUARDDUTY_ENABLED:
+    title: Guardduty Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Guardduty Enabled.'
+    check: guardduty_enabled
+  SECURITY_GROUP_NO_SSH_WORLD:
+    title: Security Group No Ssh World
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Security Group No Ssh World.'
+    check: security_group_no_ssh_world
+  SECURITY_GROUP_NO_RDP_WORLD:
+    title: Security Group No Rdp World
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Security Group No Rdp World.'
+    check: security_group_no_rdp_world
+  VPC_FLOW_LOGS_ENABLED:
+    title: Vpc Flow Logs Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Vpc Flow Logs Enabled.'
+    check: vpc_flow_logs_enabled
+  CLOUDWATCH_LOG_RETENTION_90_DAYS:
+    title: Cloudwatch Log Retention 90 Days
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Cloudwatch Log Retention 90 Days.'
+    check: cloudwatch_log_retention_90_days
+  CLOUDWATCH_LOGS_ENCRYPTED:
+    title: Cloudwatch Logs Encrypted
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Cloudwatch Logs Encrypted.'
+    check: cloudwatch_logs_encrypted
+  BACKUP_PLAN_EXISTS:
+    title: Backup Plan Exists
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Backup Plan Exists.'
+    check: backup_plan_exists
+  BACKUP_VAULT_ENCRYPTED:
+    title: Backup Vault Encrypted
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Backup Vault Encrypted.'
+    check: backup_vault_encrypted
+  S3_VERSIONING_ENABLED:
+    title: S3 Versioning Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      S3 Versioning Enabled.'
+    check: s3_versioning_enabled
+  S3_LOGGING_ENABLED:
+    title: S3 Logging Enabled
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      S3 Logging Enabled.'
+    check: s3_logging_enabled
+  EC2_NO_PUBLIC_IP:
+    title: Ec2 No Public Ip
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Ec2 No Public Ip.'
+    check: ec2_no_public_ip
+  EC2_IMDSV2_REQUIRED:
+    title: Ec2 Imdsv2 Required
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Ec2 Imdsv2 Required.'
+    check: ec2_imdsv2_required
+  EC2_EBS_ENCRYPTED:
+    title: Ec2 Ebs Encrypted
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Ec2 Ebs Encrypted.'
+    check: ec2_ebs_encrypted
+  REQUIRED_TAGS_PRESENT:
+    title: Required Tags Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Required Tags Present.'
+    check: required_tags_present
+  ENVIRONMENT_TAG_PRESENT:
+    title: Environment Tag Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Environment Tag Present.'
+    check: environment_tag_present
+  OWNER_TAG_PRESENT:
+    title: Owner Tag Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Owner Tag Present.'
+    check: owner_tag_present
+  PROJECT_TAG_PRESENT:
+    title: Project Tag Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Project Tag Present.'
+    check: project_tag_present
+  MANAGED_BY_TERRAFORM_TAG_PRESENT:
+    title: Managed By Terraform Tag Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Managed By Terraform Tag Present.'
+    check: managed_by_terraform_tag_present
+  S3_CONFIDENTIAL_TAG_PRESENT:
+    title: S3 Confidential Tag Present
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      S3 Confidential Tag Present.'
+    check: s3_confidential_tag_present
+  IAM_ROLE_EXISTS:
+    title: Iam Role Exists
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Iam Role Exists.'
+    check: iam_role_exists
+  IAM_INSTANCE_PROFILE_EXISTS:
+    title: Iam Instance Profile Exists
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Iam Instance Profile Exists.'
+    check: iam_instance_profile_exists
+  PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING:
+    title: Private Subnet No Public Ip Mapping
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Private Subnet No Public Ip Mapping.'
+    check: private_subnet_no_public_ip_mapping
+  RESTRICTED_EGRESS_ONLY_HTTPS:
+    title: Restricted Egress Only Https
+    description: 'Evaluates whether the Terraform plan satisfies the technical control:
+      Restricted Egress Only Https.'
+    check: restricted_egress_only_https
