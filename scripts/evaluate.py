@@ -28,8 +28,6 @@ POINTS = {
     "LOW": 1,
 }
 
-NON_COMPLIANT_STATUSES = {"FAIL", "UNDEFINED", "OPA_ERROR"}
-
 
 def normalize_frameworks(raw_framework: str) -> list[str]:
     selected = [item.strip().upper() for item in raw_framework.split(",") if item.strip()]
@@ -48,13 +46,11 @@ def normalize_frameworks(raw_framework: str) -> list[str]:
 
 
 def run_opa(plan_path: str, check: str) -> dict[str, Any]:
-    """Run a single OPA/Rego check and return a structured result.
+    """Run a single OPA/Rego check and return a simplified PASS/FAIL result.
 
-    PASS means the Rego rule explicitly evaluated to true.
-    FAIL means the rule was evaluated but did not return true, usually because the
-    Terraform plan does not satisfy the control.
-    OPA_ERROR means OPA could not parse/evaluate the policy or input.
-    UNDEFINED means OPA returned a value, but it was not a boolean.
+    The HTML report intentionally exposes only PASS and FAIL to keep the output
+    focused on audit results instead of internal evaluator states. Execution
+    errors are logged to stderr and treated as FAIL.
     """
     command = [
         "opa",
@@ -72,76 +68,28 @@ def run_opa(plan_path: str, check: str) -> dict[str, Any]:
 
     if completed.returncode != 0:
         message = completed.stderr.strip() or completed.stdout.strip() or "OPA evaluation failed without output."
-        print(f"OPA evaluation error for check '{check}': {message}", file=sys.stderr)
-        return {
-            "status": "OPA_ERROR",
-            "passed": False,
-            "message": message,
-            "opa_returncode": completed.returncode,
-        }
+        print(f"Policy evaluation error for check '{check}': {message}", file=sys.stderr)
+        return {"status": "FAIL", "passed": False}
 
     try:
         data = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        return {
-            "status": "OPA_ERROR",
-            "passed": False,
-            "message": f"Invalid JSON returned by OPA: {exc}",
-            "opa_returncode": completed.returncode,
-        }
+        print(f"Invalid JSON returned by OPA for check '{check}': {exc}", file=sys.stderr)
+        return {"status": "FAIL", "passed": False}
 
     result = data.get("result", [])
-
-    # For boolean-style Rego rules, an empty result means the rule was undefined.
-    # In a compliance context this means the control did not pass, not that OPA failed.
     if not result:
-        return {
-            "status": "FAIL",
-            "passed": False,
-            "message": "Rule did not evaluate to true for this Terraform plan.",
-            "opa_returncode": completed.returncode,
-        }
+        return {"status": "FAIL", "passed": False}
 
     try:
         value = result[0]["expressions"][0]["value"]
     except (KeyError, IndexError, TypeError):
-        return {
-            "status": "UNDEFINED",
-            "passed": False,
-            "message": "OPA result did not include a boolean expression value.",
-            "opa_returncode": completed.returncode,
-        }
+        return {"status": "FAIL", "passed": False}
 
     if value is True:
-        return {
-            "status": "PASS",
-            "passed": True,
-            "message": "Rule evaluated to true.",
-            "opa_returncode": completed.returncode,
-        }
+        return {"status": "PASS", "passed": True}
 
-    if value is False:
-        return {
-            "status": "FAIL",
-            "passed": False,
-            "message": "Rule evaluated to false.",
-            "opa_returncode": completed.returncode,
-        }
-
-    return {
-        "status": "UNDEFINED",
-        "passed": False,
-        "message": f"OPA returned a non-boolean value: {value!r}",
-        "opa_returncode": completed.returncode,
-    }
-
-
-def build_related_frameworks(frameworks_map: dict) -> dict[str, list[str]]:
-    related = defaultdict(set)
-    for framework, items in frameworks_map.items():
-        for item in items:
-            related[item["control"]].add(framework)
-    return {control: sorted(frameworks) for control, frameworks in related.items()}
+    return {"status": "FAIL", "passed": False}
 
 
 def update_summary(summary: dict, severity: str, score: int, status: str) -> None:
@@ -151,10 +99,6 @@ def update_summary(summary: dict, severity: str, score: int, status: str) -> Non
     if status == "PASS":
         summary["achieved_score"] += score
         summary["passed"] += 1
-    elif status == "OPA_ERROR":
-        summary["opa_error"] += 1
-    elif status == "UNDEFINED":
-        summary["undefined"] += 1
     else:
         summary["failed"] += 1
 
@@ -169,15 +113,13 @@ def default_summary() -> dict:
         "total_controls": 0,
         "passed": 0,
         "failed": 0,
-        "opa_error": 0,
-        "undefined": 0,
-        "by_severity": defaultdict(lambda: {"total": 0, "pass": 0, "fail": 0, "opa_error": 0, "undefined": 0}),
+        "by_severity": defaultdict(lambda: {"total": 0, "pass": 0, "fail": 0}),
     }
 
 
 def finalize_summary(summary: dict) -> dict:
     summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
-    summary["non_passed"] = summary["failed"] + summary["opa_error"] + summary["undefined"]
+    summary["non_passed"] = summary["failed"]
     summary["by_severity"] = {key: dict(value) for key, value in sorted(summary["by_severity"].items())}
     return summary
 
@@ -201,8 +143,6 @@ def main() -> None:
 
     with open(args.frameworks, "r", encoding="utf-8") as file:
         frameworks_map = yaml.safe_load(file)["frameworks"]
-
-    related_by_control = build_related_frameworks(frameworks_map)
 
     results = []
     framework_summary = defaultdict(default_summary)
@@ -236,7 +176,6 @@ def main() -> None:
                 "framework": framework,
                 "domain": item.get("domain", "General"),
                 "control": control_id,
-                "related_frameworks": related_by_control.get(control_id, []),
                 "severity": severity,
                 "score": score,
                 "requirement": item.get("requirement", control["title"]),
@@ -245,7 +184,6 @@ def main() -> None:
                 "check": control["check"],
                 "passed": passed,
                 "status": status,
-                "message": evaluation.get("message", ""),
             })
 
     output = {

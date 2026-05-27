@@ -2,21 +2,19 @@
 import argparse
 import html
 import json
-from collections import defaultdict
 from pathlib import Path
 
 
 STATUS_CLASSES = {
     "PASS": "pass",
     "FAIL": "fail",
-    "OPA_ERROR": "error",
-    "UNDEFINED": "undefined",
 }
 
 
 def badge(status: str) -> str:
-    css_class = STATUS_CLASSES.get(status, "undefined")
-    return f'<span class="badge {css_class}">{html.escape(status)}</span>'
+    normalized = "PASS" if status == "PASS" else "FAIL"
+    css_class = STATUS_CLASSES[normalized]
+    return f'<span class="badge {css_class}">{html.escape(normalized)}</span>'
 
 
 def pct(value: float) -> str:
@@ -24,22 +22,11 @@ def pct(value: float) -> str:
 
 
 def status_priority(status: str) -> int:
-    return {
-        "OPA_ERROR": 0,
-        "UNDEFINED": 1,
-        "FAIL": 2,
-        "PASS": 3,
-    }.get(status, 1)
+    return {"FAIL": 0, "PASS": 1}.get(status, 0)
 
 
 def aggregate_status(statuses: list[str]) -> str:
-    if any(status == "OPA_ERROR" for status in statuses):
-        return "OPA_ERROR"
-    if any(status == "UNDEFINED" for status in statuses):
-        return "UNDEFINED"
-    if all(status == "PASS" for status in statuses):
-        return "PASS"
-    return "FAIL"
+    return "PASS" if statuses and all(status == "PASS" for status in statuses) else "FAIL"
 
 
 def count_status(results: list[dict], status: str) -> int:
@@ -54,7 +41,6 @@ def grouped_controls(results: list[dict]) -> list[dict]:
             grouped[control_id] = {
                 "control": control_id,
                 "title": item["title"],
-                "check": item["check"],
                 "frameworks": set(),
                 "domains": set(),
                 "statuses": [],
@@ -81,51 +67,6 @@ def grouped_controls(results: list[dict]) -> list[dict]:
     return sorted(rows, key=lambda item: (status_priority(item["status"]), item["control"]))
 
 
-def domain_summary_rows(results: list[dict]) -> str:
-    domains = defaultdict(lambda: {
-        "passed": 0,
-        "failed": 0,
-        "opa_error": 0,
-        "undefined": 0,
-        "achieved_score": 0,
-        "total_score": 0,
-    })
-
-    for item in results:
-        key = (item["framework"], item.get("domain", "General"))
-        status = item.get("status", "FAIL")
-        score = int(item.get("score", 0))
-        domains[key]["total_score"] += score
-
-        if status == "PASS":
-            domains[key]["passed"] += 1
-            domains[key]["achieved_score"] += score
-        elif status == "OPA_ERROR":
-            domains[key]["opa_error"] += 1
-        elif status == "UNDEFINED":
-            domains[key]["undefined"] += 1
-        else:
-            domains[key]["failed"] += 1
-
-    rows = ""
-    for (framework, domain), summary in sorted(domains.items()):
-        percent = (summary["achieved_score"] / summary["total_score"] * 100) if summary["total_score"] else 0
-        rows += f"""
-        <tr>
-          <td>{html.escape(framework)}</td>
-          <td>{html.escape(domain)}</td>
-          <td>{summary['passed']}</td>
-          <td>{summary['failed']}</td>
-          <td>{summary['opa_error']}</td>
-          <td>{summary['undefined']}</td>
-          <td>{summary['achieved_score']}</td>
-          <td>{summary['total_score']}</td>
-          <td>{pct(percent)}</td>
-        </tr>
-        """
-    return rows
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Render compliance results as an HTML report.")
     parser.add_argument("--input", required=True, help="Path to results JSON file.")
@@ -135,8 +76,6 @@ def main() -> None:
     with open(args.input, "r", encoding="utf-8") as file:
         data = json.load(file)
 
-    opa_errors = count_status(data["results"], "OPA_ERROR")
-    undefined = count_status(data["results"], "UNDEFINED")
     failed = count_status(data["results"], "FAIL")
     passed = count_status(data["results"], "PASS")
 
@@ -147,8 +86,6 @@ def main() -> None:
           <td>{html.escape(framework)}</td>
           <td>{summary.get('passed', 0)}</td>
           <td>{summary.get('failed', 0)}</td>
-          <td>{summary.get('opa_error', 0)}</td>
-          <td>{summary.get('undefined', 0)}</td>
           <td>{summary['achieved_score']}</td>
           <td>{summary['total_score']}</td>
           <td>{pct(summary['score_percent'])}</td>
@@ -167,30 +104,24 @@ def main() -> None:
           <td>{html.escape(domains)}</td>
           <td>{item['usage_count']}</td>
           <td class="severity {html.escape(item['highest_severity'].lower())}">{html.escape(item['highest_severity'])}</td>
-          <td><code>{html.escape(item['check'])}</code></td>
           <td>{badge(item['status'])}</td>
         </tr>
         """
 
     result_rows = ""
     for item in data["results"]:
-        related = ", ".join(item.get("related_frameworks", []))
         status = item.get("status", "PASS" if item.get("passed") else "FAIL")
-        message = item.get("message", "")
         result_rows += f"""
         <tr>
           <td>{html.escape(item['id'])}</td>
           <td>{html.escape(item['framework'])}</td>
           <td>{html.escape(item.get('domain', 'General'))}</td>
           <td><code>{html.escape(item['control'])}</code></td>
-          <td>{html.escape(related)}</td>
           <td class="severity {html.escape(item['severity'].lower())}">{html.escape(item['severity'])}</td>
           <td>{item['score']}</td>
           <td>{html.escape(item.get('requirement', item['title']))}</td>
           <td>{html.escape(item['title'])}</td>
-          <td><code>{html.escape(item['check'])}</code></td>
           <td>{badge(status)}</td>
-          <td>{html.escape(message)}</td>
         </tr>
         """
 
@@ -217,7 +148,7 @@ def main() -> None:
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }}
     .score {{ font-size: 32px; font-weight: 700; margin: 8px 0; }}
-    .summary-grid {{ display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; }}
+    .summary-grid {{ display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; }}
     .summary-box {{ background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 10px; padding: 12px; }}
     .summary-box strong {{ display: block; font-size: 22px; }}
     table {{ width: 100%; border-collapse: collapse; background: #ffffff; font-size: 14px; }}
@@ -227,8 +158,6 @@ def main() -> None:
     .badge {{ border-radius: 999px; color: white; display: inline-block; font-weight: 700; padding: 4px 10px; white-space: nowrap; }}
     .pass {{ background: #1a7f37; }}
     .fail {{ background: #cf222e; }}
-    .error {{ background: #8250df; }}
-    .undefined {{ background: #57606a; }}
     .severity.high {{ color: #cf222e; font-weight: 700; }}
     .severity.medium {{ color: #9a6700; font-weight: 700; }}
     .severity.low {{ color: #0969da; font-weight: 700; }}
@@ -244,8 +173,6 @@ def main() -> None:
     <div class="summary-grid">
       <div class="summary-box"><strong>{passed}</strong>PASS</div>
       <div class="summary-box"><strong>{failed}</strong>FAIL</div>
-      <div class="summary-box"><strong>{opa_errors}</strong>OPA_ERROR</div>
-      <div class="summary-box"><strong>{undefined}</strong>UNDEFINED</div>
     </div>
   </div>
 
@@ -253,20 +180,9 @@ def main() -> None:
     <h2>Score by Framework</h2>
     <table>
       <thead>
-        <tr><th>Framework</th><th>Passed</th><th>Failed</th><th>OPA Errors</th><th>Undefined</th><th>Achieved Points</th><th>Total Points</th><th>Score</th></tr>
+        <tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Achieved Points</th><th>Total Points</th><th>Score</th></tr>
       </thead>
       <tbody>{framework_rows}</tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <h2>Score by Framework Domain</h2>
-    <p class="meta">Domains are defined in frameworks.yaml to make each framework-specific audit easier to interpret.</p>
-    <table>
-      <thead>
-        <tr><th>Framework</th><th>Domain</th><th>Passed</th><th>Failed</th><th>OPA Errors</th><th>Undefined</th><th>Achieved Points</th><th>Total Points</th><th>Score</th></tr>
-      </thead>
-      <tbody>{domain_summary_rows(data['results'])}</tbody>
     </table>
   </div>
 
@@ -275,7 +191,7 @@ def main() -> None:
     <p class="meta">This table is generated by matching the same technical control ID from frameworks.yaml to controls.yaml.</p>
     <table>
       <thead>
-        <tr><th>Technical Control</th><th>Control Title</th><th>Related Frameworks in This Run</th><th>Framework Domains</th><th>Mapped Items</th><th>Highest Severity</th><th>OPA/Rego Check</th><th>Status</th></tr>
+        <tr><th>Technical Control</th><th>Control Title</th><th>Related Frameworks in This Run</th><th>Framework Domains</th><th>Mapped Items</th><th>Highest Severity</th><th>Status</th></tr>
       </thead>
       <tbody>{relationship_rows}</tbody>
     </table>
@@ -285,7 +201,7 @@ def main() -> None:
     <h2>Detailed Audit Results</h2>
     <table>
       <thead>
-        <tr><th>Item</th><th>Framework</th><th>Domain</th><th>Technical Control</th><th>All Related Frameworks</th><th>Severity</th><th>Points</th><th>Framework Requirement</th><th>Control Item</th><th>OPA/Rego Check</th><th>Status</th><th>Evaluation Message</th></tr>
+        <tr><th>Item</th><th>Framework</th><th>Domain</th><th>Technical Control</th><th>Severity</th><th>Points</th><th>Framework Requirement</th><th>Control Item</th><th>Status</th></tr>
       </thead>
       <tbody>{result_rows}</tbody>
     </table>
