@@ -8,7 +8,7 @@ This project is a practical **Cloud Compliance & Security Automation Pipeline** 
 * Cloud Governance & Continuous Compliance
 * DevSecOps
 
-The solution analyzes Terraform execution plans for AWS environments and evaluates them against multiple international and Brazilian security and compliance frameworks using **OPA/Rego**.
+The solution analyzes **Terraform** execution plans for **AWS** environments and evaluates them against multiple international and Brazilian security and compliance frameworks using **OPA/Rego** and **Python-based** compliance processing and reporting automation.
 
 ### International Frameworks
 
