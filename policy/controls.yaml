@@ -1,0 +1,185 @@
+severity_points:
+  HIGH: 5
+  MEDIUM: 3
+  LOW: 1
+
+framework_templates:
+  GDPR:
+    high:
+      - {check: s3_encrypted, title: "Personal data repositories use encryption at rest"}
+      - {check: s3_public_block_enabled, title: "Public access is blocked for object storage"}
+      - {check: iam_no_admin_policy, title: "IAM avoids unrestricted administrative policies"}
+      - {check: cloudtrail_enabled, title: "Audit trail is enabled for accountability"}
+      - {check: kms_key_exists, title: "Encryption keys are centrally managed"}
+    medium:
+      - {check: s3_versioning_enabled, title: "Object versioning supports integrity and recovery"}
+      - {check: vpc_flow_logs_enabled, title: "Network flows are logged"}
+      - {check: guardduty_enabled, title: "Threat detection service is enabled"}
+      - {check: ec2_no_public_ip, title: "Compute instances avoid direct public exposure"}
+      - {check: backup_plan_exists, title: "Backup plan exists for resilience"}
+    low:
+      - {check: required_tags_present, title: "Governance tags are applied"}
+      - {check: security_group_no_ssh_world, title: "SSH is not open to the internet"}
+      - {check: security_group_no_rdp_world, title: "RDP is not open to the internet"}
+      - {check: s3_versioning_enabled, title: "Traceability is supported by versioning"}
+      - {check: cloudtrail_enabled, title: "Security events are auditable"}
+
+  NIST_CSF:
+    high:
+      - {check: cloudtrail_enabled, title: "GV/DE audit logging is enabled"}
+      - {check: guardduty_enabled, title: "DE threat detection is enabled"}
+      - {check: iam_no_admin_policy, title: "PR access control limits excessive privilege"}
+      - {check: s3_public_block_enabled, title: "PR data repositories block public access"}
+      - {check: kms_key_exists, title: "PR encryption key management exists"}
+    medium:
+      - {check: vpc_flow_logs_enabled, title: "DE network telemetry is collected"}
+      - {check: s3_encrypted, title: "PR data at rest is encrypted"}
+      - {check: s3_versioning_enabled, title: "RC recovery support through versioning"}
+      - {check: ec2_no_public_ip, title: "PR compute exposure is reduced"}
+      - {check: backup_plan_exists, title: "RC backup capability exists"}
+    low:
+      - {check: required_tags_present, title: "ID asset governance tags exist"}
+      - {check: security_group_no_ssh_world, title: "PR remote administration is restricted"}
+      - {check: security_group_no_rdp_world, title: "PR remote desktop exposure is restricted"}
+      - {check: cloudtrail_enabled, title: "GV accountability evidence exists"}
+      - {check: guardduty_enabled, title: "DE alerting capability exists"}
+
+  CIS:
+    high:
+      - {check: iam_no_admin_policy, title: "Administrative privileges are restricted"}
+      - {check: security_group_no_ssh_world, title: "SSH is not exposed to 0.0.0.0/0"}
+      - {check: security_group_no_rdp_world, title: "RDP is not exposed to 0.0.0.0/0"}
+      - {check: s3_public_block_enabled, title: "Cloud storage public access is blocked"}
+      - {check: cloudtrail_enabled, title: "Audit logging is enabled"}
+    medium:
+      - {check: guardduty_enabled, title: "Malware/threat detection is enabled"}
+      - {check: vpc_flow_logs_enabled, title: "Network monitoring data is collected"}
+      - {check: s3_encrypted, title: "Data is encrypted at rest"}
+      - {check: kms_key_exists, title: "Cryptographic key resource exists"}
+      - {check: ec2_no_public_ip, title: "Compute instances are not directly public"}
+    low:
+      - {check: required_tags_present, title: "Asset inventory tags exist"}
+      - {check: s3_versioning_enabled, title: "Storage versioning is enabled"}
+      - {check: backup_plan_exists, title: "Backup plan exists"}
+      - {check: cloudtrail_enabled, title: "Event logging supports accountability"}
+      - {check: vpc_flow_logs_enabled, title: "Traffic visibility is available"}
+
+  ISO27001:
+    high:
+      - {check: iam_no_admin_policy, title: "Access control avoids unrestricted privileges"}
+      - {check: s3_encrypted, title: "Information is protected with encryption"}
+      - {check: kms_key_exists, title: "Cryptographic key management exists"}
+      - {check: cloudtrail_enabled, title: "Logging and monitoring evidence exists"}
+      - {check: s3_public_block_enabled, title: "Information repositories are not public"}
+    medium:
+      - {check: guardduty_enabled, title: "Threat monitoring is enabled"}
+      - {check: vpc_flow_logs_enabled, title: "Network monitoring logs exist"}
+      - {check: backup_plan_exists, title: "Backup management exists"}
+      - {check: ec2_no_public_ip, title: "Infrastructure exposure is reduced"}
+      - {check: s3_versioning_enabled, title: "Information integrity is supported"}
+    low:
+      - {check: required_tags_present, title: "Asset ownership tags exist"}
+      - {check: security_group_no_ssh_world, title: "Administrative access is restricted"}
+      - {check: security_group_no_rdp_world, title: "Remote access exposure is restricted"}
+      - {check: cloudtrail_enabled, title: "Audit records are available"}
+      - {check: backup_plan_exists, title: "Recovery capability is documented in IaC"}
+
+  PCI_DSS:
+    high:
+      - {check: s3_encrypted, title: "Cardholder data storage is encrypted"}
+      - {check: kms_key_exists, title: "Cryptographic keys are available"}
+      - {check: iam_no_admin_policy, title: "Access is least privilege"}
+      - {check: cloudtrail_enabled, title: "Security events are logged"}
+      - {check: security_group_no_ssh_world, title: "Administrative ports are not publicly exposed"}
+    medium:
+      - {check: security_group_no_rdp_world, title: "Remote desktop is not public"}
+      - {check: guardduty_enabled, title: "Threat detection is enabled"}
+      - {check: vpc_flow_logs_enabled, title: "Network traffic is monitored"}
+      - {check: s3_public_block_enabled, title: "Storage is protected from public exposure"}
+      - {check: ec2_no_public_ip, title: "Compute public exposure is avoided"}
+    low:
+      - {check: required_tags_present, title: "Assets have ownership and environment tags"}
+      - {check: s3_versioning_enabled, title: "Object versioning supports integrity"}
+      - {check: backup_plan_exists, title: "Backups support availability"}
+      - {check: cloudtrail_enabled, title: "Audit evidence exists"}
+      - {check: vpc_flow_logs_enabled, title: "Network evidence exists"}
+
+  SOC2:
+    high:
+      - {check: cloudtrail_enabled, title: "Security and availability events are logged"}
+      - {check: iam_no_admin_policy, title: "Logical access is restricted"}
+      - {check: s3_encrypted, title: "Confidential data is encrypted"}
+      - {check: backup_plan_exists, title: "Availability is supported by backup"}
+      - {check: guardduty_enabled, title: "Security monitoring is enabled"}
+    medium:
+      - {check: vpc_flow_logs_enabled, title: "Network activity is monitored"}
+      - {check: kms_key_exists, title: "Encryption key management exists"}
+      - {check: s3_public_block_enabled, title: "Public storage exposure is blocked"}
+      - {check: ec2_no_public_ip, title: "Compute exposure is limited"}
+      - {check: s3_versioning_enabled, title: "Integrity and recoverability are supported"}
+    low:
+      - {check: required_tags_present, title: "Assets have governance metadata"}
+      - {check: security_group_no_ssh_world, title: "SSH access is restricted"}
+      - {check: security_group_no_rdp_world, title: "RDP access is restricted"}
+      - {check: cloudtrail_enabled, title: "Audit trail evidence is available"}
+      - {check: backup_plan_exists, title: "Backup plan is represented in IaC"}
+
+  MITRE:
+    high:
+      - {check: guardduty_enabled, title: "Detection capability for adversary behavior exists"}
+      - {check: cloudtrail_enabled, title: "Cloud API activity is logged"}
+      - {check: iam_no_admin_policy, title: "Privilege escalation risk is reduced"}
+      - {check: security_group_no_ssh_world, title: "Initial access through SSH is restricted"}
+      - {check: security_group_no_rdp_world, title: "Initial access through RDP is restricted"}
+    medium:
+      - {check: vpc_flow_logs_enabled, title: "Network telemetry supports detection"}
+      - {check: ec2_no_public_ip, title: "Attack surface is reduced"}
+      - {check: s3_public_block_enabled, title: "Data exposure through public buckets is reduced"}
+      - {check: kms_key_exists, title: "Encrypted resources support defense in depth"}
+      - {check: s3_encrypted, title: "Data collection/exfiltration impact is reduced"}
+    low:
+      - {check: required_tags_present, title: "Assets can be mapped for investigations"}
+      - {check: s3_versioning_enabled, title: "Tampering recovery is supported"}
+      - {check: backup_plan_exists, title: "Impact recovery capability exists"}
+      - {check: cloudtrail_enabled, title: "Investigation evidence exists"}
+      - {check: guardduty_enabled, title: "Detection signal exists"}
+
+  LGPD:
+    high:
+      - {check: s3_encrypted, title: "Dados pessoais são criptografados em repouso"}
+      - {check: s3_public_block_enabled, title: "Repositórios com dados pessoais bloqueiam acesso público"}
+      - {check: iam_no_admin_policy, title: "Acesso segue menor privilégio"}
+      - {check: cloudtrail_enabled, title: "Rastreabilidade de ações está habilitada"}
+      - {check: kms_key_exists, title: "Chaves criptográficas são gerenciadas"}
+    medium:
+      - {check: backup_plan_exists, title: "Plano de backup apoia disponibilidade"}
+      - {check: guardduty_enabled, title: "Detecção de ameaças está habilitada"}
+      - {check: vpc_flow_logs_enabled, title: "Tráfego de rede possui registros"}
+      - {check: ec2_no_public_ip, title: "Instâncias não ficam expostas diretamente"}
+      - {check: s3_versioning_enabled, title: "Versionamento apoia integridade e recuperação"}
+    low:
+      - {check: required_tags_present, title: "Tags de governança estão presentes"}
+      - {check: security_group_no_ssh_world, title: "SSH não está aberto para a internet"}
+      - {check: security_group_no_rdp_world, title: "RDP não está aberto para a internet"}
+      - {check: cloudtrail_enabled, title: "Evidências de auditoria estão disponíveis"}
+      - {check: backup_plan_exists, title: "Recuperação está representada como código"}
+
+  BACEN:
+    high:
+      - {check: cloudtrail_enabled, title: "Trilhas de auditoria suportam governança cibernética"}
+      - {check: guardduty_enabled, title: "Monitoramento de ameaças está habilitado"}
+      - {check: backup_plan_exists, title: "Continuidade e recuperação são suportadas"}
+      - {check: iam_no_admin_policy, title: "Privilégios administrativos são restringidos"}
+      - {check: kms_key_exists, title: "Criptografia e gestão de chaves estão disponíveis"}
+    medium:
+      - {check: vpc_flow_logs_enabled, title: "Registros de tráfego de rede são coletados"}
+      - {check: s3_encrypted, title: "Dados armazenados são criptografados"}
+      - {check: s3_public_block_enabled, title: "Armazenamento em nuvem não é público"}
+      - {check: ec2_no_public_ip, title: "Exposição pública de computação é reduzida"}
+      - {check: s3_versioning_enabled, title: "Versionamento apoia recuperação e rastreabilidade"}
+    low:
+      - {check: required_tags_present, title: "Ativos possuem tags de governança"}
+      - {check: security_group_no_ssh_world, title: "Administração remota é restrita"}
+      - {check: security_group_no_rdp_world, title: "RDP público é bloqueado"}
+      - {check: cloudtrail_enabled, title: "Eventos são auditáveis"}
+      - {check: backup_plan_exists, title: "Backup está declarado em IaC"}
