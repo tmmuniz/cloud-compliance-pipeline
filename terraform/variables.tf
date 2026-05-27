@@ -1,29 +1,35 @@
-variable "aws_region" {
-  description = "AWS region used by the portfolio lab."
+variable "AWS_REGION" {
+  description = "AWS region used by Terraform."
   type        = string
   default     = "us-east-1"
 }
 
-variable "project" {
-  description = "Project tag value."
+variable "PROJECT" {
+  description = "Project tag."
   type        = string
   default     = "cloud-compliance-pipeline"
 }
 
-variable "environment" {
-  description = "Environment tag value."
+variable "ENVIRONMENT" {
+  description = "Environment tag."
   type        = string
   default     = "dev"
 }
 
-variable "owner" {
-  description = "Owner tag value."
+variable "OWNER" {
+  description = "Owner tag."
   type        = string
-  default     = "portfolio"
+  default     = "security-team"
 }
 
-variable "allowed_ssh_cidr" {
-  description = "CIDR allowed for SSH access. Avoid 0.0.0.0/0."
+variable "ALLOWED_PUBLIC_IP_CIDR" {
+  description = "Public CIDR allowed to access administrative ports when required."
   type        = string
   default     = "203.0.113.10/32"
+}
+
+variable "MOCK_AMI_ID" {
+  description = "Static AMI ID used only to build a demo Terraform plan without querying AWS."
+  type        = string
+  default     = "ami-0123456789abcdef0"
 }

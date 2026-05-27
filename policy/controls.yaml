@@ -1,185 +1,3388 @@
-severity_points:
-  HIGH: 5
-  MEDIUM: 3
-  LOW: 1
-
-framework_templates:
-  GDPR:
-    high:
-      - {check: s3_encrypted, title: "Personal data repositories use encryption at rest"}
-      - {check: s3_public_block_enabled, title: "Public access is blocked for object storage"}
-      - {check: iam_no_admin_policy, title: "IAM avoids unrestricted administrative policies"}
-      - {check: cloudtrail_enabled, title: "Audit trail is enabled for accountability"}
-      - {check: kms_key_exists, title: "Encryption keys are centrally managed"}
-    medium:
-      - {check: s3_versioning_enabled, title: "Object versioning supports integrity and recovery"}
-      - {check: vpc_flow_logs_enabled, title: "Network flows are logged"}
-      - {check: guardduty_enabled, title: "Threat detection service is enabled"}
-      - {check: ec2_no_public_ip, title: "Compute instances avoid direct public exposure"}
-      - {check: backup_plan_exists, title: "Backup plan exists for resilience"}
-    low:
-      - {check: required_tags_present, title: "Governance tags are applied"}
-      - {check: security_group_no_ssh_world, title: "SSH is not open to the internet"}
-      - {check: security_group_no_rdp_world, title: "RDP is not open to the internet"}
-      - {check: s3_versioning_enabled, title: "Traceability is supported by versioning"}
-      - {check: cloudtrail_enabled, title: "Security events are auditable"}
-
-  NIST_CSF:
-    high:
-      - {check: cloudtrail_enabled, title: "GV/DE audit logging is enabled"}
-      - {check: guardduty_enabled, title: "DE threat detection is enabled"}
-      - {check: iam_no_admin_policy, title: "PR access control limits excessive privilege"}
-      - {check: s3_public_block_enabled, title: "PR data repositories block public access"}
-      - {check: kms_key_exists, title: "PR encryption key management exists"}
-    medium:
-      - {check: vpc_flow_logs_enabled, title: "DE network telemetry is collected"}
-      - {check: s3_encrypted, title: "PR data at rest is encrypted"}
-      - {check: s3_versioning_enabled, title: "RC recovery support through versioning"}
-      - {check: ec2_no_public_ip, title: "PR compute exposure is reduced"}
-      - {check: backup_plan_exists, title: "RC backup capability exists"}
-    low:
-      - {check: required_tags_present, title: "ID asset governance tags exist"}
-      - {check: security_group_no_ssh_world, title: "PR remote administration is restricted"}
-      - {check: security_group_no_rdp_world, title: "PR remote desktop exposure is restricted"}
-      - {check: cloudtrail_enabled, title: "GV accountability evidence exists"}
-      - {check: guardduty_enabled, title: "DE alerting capability exists"}
-
-  CIS:
-    high:
-      - {check: iam_no_admin_policy, title: "Administrative privileges are restricted"}
-      - {check: security_group_no_ssh_world, title: "SSH is not exposed to 0.0.0.0/0"}
-      - {check: security_group_no_rdp_world, title: "RDP is not exposed to 0.0.0.0/0"}
-      - {check: s3_public_block_enabled, title: "Cloud storage public access is blocked"}
-      - {check: cloudtrail_enabled, title: "Audit logging is enabled"}
-    medium:
-      - {check: guardduty_enabled, title: "Malware/threat detection is enabled"}
-      - {check: vpc_flow_logs_enabled, title: "Network monitoring data is collected"}
-      - {check: s3_encrypted, title: "Data is encrypted at rest"}
-      - {check: kms_key_exists, title: "Cryptographic key resource exists"}
-      - {check: ec2_no_public_ip, title: "Compute instances are not directly public"}
-    low:
-      - {check: required_tags_present, title: "Asset inventory tags exist"}
-      - {check: s3_versioning_enabled, title: "Storage versioning is enabled"}
-      - {check: backup_plan_exists, title: "Backup plan exists"}
-      - {check: cloudtrail_enabled, title: "Event logging supports accountability"}
-      - {check: vpc_flow_logs_enabled, title: "Traffic visibility is available"}
-
-  ISO27001:
-    high:
-      - {check: iam_no_admin_policy, title: "Access control avoids unrestricted privileges"}
-      - {check: s3_encrypted, title: "Information is protected with encryption"}
-      - {check: kms_key_exists, title: "Cryptographic key management exists"}
-      - {check: cloudtrail_enabled, title: "Logging and monitoring evidence exists"}
-      - {check: s3_public_block_enabled, title: "Information repositories are not public"}
-    medium:
-      - {check: guardduty_enabled, title: "Threat monitoring is enabled"}
-      - {check: vpc_flow_logs_enabled, title: "Network monitoring logs exist"}
-      - {check: backup_plan_exists, title: "Backup management exists"}
-      - {check: ec2_no_public_ip, title: "Infrastructure exposure is reduced"}
-      - {check: s3_versioning_enabled, title: "Information integrity is supported"}
-    low:
-      - {check: required_tags_present, title: "Asset ownership tags exist"}
-      - {check: security_group_no_ssh_world, title: "Administrative access is restricted"}
-      - {check: security_group_no_rdp_world, title: "Remote access exposure is restricted"}
-      - {check: cloudtrail_enabled, title: "Audit records are available"}
-      - {check: backup_plan_exists, title: "Recovery capability is documented in IaC"}
-
-  PCI_DSS:
-    high:
-      - {check: s3_encrypted, title: "Cardholder data storage is encrypted"}
-      - {check: kms_key_exists, title: "Cryptographic keys are available"}
-      - {check: iam_no_admin_policy, title: "Access is least privilege"}
-      - {check: cloudtrail_enabled, title: "Security events are logged"}
-      - {check: security_group_no_ssh_world, title: "Administrative ports are not publicly exposed"}
-    medium:
-      - {check: security_group_no_rdp_world, title: "Remote desktop is not public"}
-      - {check: guardduty_enabled, title: "Threat detection is enabled"}
-      - {check: vpc_flow_logs_enabled, title: "Network traffic is monitored"}
-      - {check: s3_public_block_enabled, title: "Storage is protected from public exposure"}
-      - {check: ec2_no_public_ip, title: "Compute public exposure is avoided"}
-    low:
-      - {check: required_tags_present, title: "Assets have ownership and environment tags"}
-      - {check: s3_versioning_enabled, title: "Object versioning supports integrity"}
-      - {check: backup_plan_exists, title: "Backups support availability"}
-      - {check: cloudtrail_enabled, title: "Audit evidence exists"}
-      - {check: vpc_flow_logs_enabled, title: "Network evidence exists"}
-
-  SOC2:
-    high:
-      - {check: cloudtrail_enabled, title: "Security and availability events are logged"}
-      - {check: iam_no_admin_policy, title: "Logical access is restricted"}
-      - {check: s3_encrypted, title: "Confidential data is encrypted"}
-      - {check: backup_plan_exists, title: "Availability is supported by backup"}
-      - {check: guardduty_enabled, title: "Security monitoring is enabled"}
-    medium:
-      - {check: vpc_flow_logs_enabled, title: "Network activity is monitored"}
-      - {check: kms_key_exists, title: "Encryption key management exists"}
-      - {check: s3_public_block_enabled, title: "Public storage exposure is blocked"}
-      - {check: ec2_no_public_ip, title: "Compute exposure is limited"}
-      - {check: s3_versioning_enabled, title: "Integrity and recoverability are supported"}
-    low:
-      - {check: required_tags_present, title: "Assets have governance metadata"}
-      - {check: security_group_no_ssh_world, title: "SSH access is restricted"}
-      - {check: security_group_no_rdp_world, title: "RDP access is restricted"}
-      - {check: cloudtrail_enabled, title: "Audit trail evidence is available"}
-      - {check: backup_plan_exists, title: "Backup plan is represented in IaC"}
-
-  MITRE:
-    high:
-      - {check: guardduty_enabled, title: "Detection capability for adversary behavior exists"}
-      - {check: cloudtrail_enabled, title: "Cloud API activity is logged"}
-      - {check: iam_no_admin_policy, title: "Privilege escalation risk is reduced"}
-      - {check: security_group_no_ssh_world, title: "Initial access through SSH is restricted"}
-      - {check: security_group_no_rdp_world, title: "Initial access through RDP is restricted"}
-    medium:
-      - {check: vpc_flow_logs_enabled, title: "Network telemetry supports detection"}
-      - {check: ec2_no_public_ip, title: "Attack surface is reduced"}
-      - {check: s3_public_block_enabled, title: "Data exposure through public buckets is reduced"}
-      - {check: kms_key_exists, title: "Encrypted resources support defense in depth"}
-      - {check: s3_encrypted, title: "Data collection/exfiltration impact is reduced"}
-    low:
-      - {check: required_tags_present, title: "Assets can be mapped for investigations"}
-      - {check: s3_versioning_enabled, title: "Tampering recovery is supported"}
-      - {check: backup_plan_exists, title: "Impact recovery capability exists"}
-      - {check: cloudtrail_enabled, title: "Investigation evidence exists"}
-      - {check: guardduty_enabled, title: "Detection signal exists"}
-
-  LGPD:
-    high:
-      - {check: s3_encrypted, title: "Dados pessoais são criptografados em repouso"}
-      - {check: s3_public_block_enabled, title: "Repositórios com dados pessoais bloqueiam acesso público"}
-      - {check: iam_no_admin_policy, title: "Acesso segue menor privilégio"}
-      - {check: cloudtrail_enabled, title: "Rastreabilidade de ações está habilitada"}
-      - {check: kms_key_exists, title: "Chaves criptográficas são gerenciadas"}
-    medium:
-      - {check: backup_plan_exists, title: "Plano de backup apoia disponibilidade"}
-      - {check: guardduty_enabled, title: "Detecção de ameaças está habilitada"}
-      - {check: vpc_flow_logs_enabled, title: "Tráfego de rede possui registros"}
-      - {check: ec2_no_public_ip, title: "Instâncias não ficam expostas diretamente"}
-      - {check: s3_versioning_enabled, title: "Versionamento apoia integridade e recuperação"}
-    low:
-      - {check: required_tags_present, title: "Tags de governança estão presentes"}
-      - {check: security_group_no_ssh_world, title: "SSH não está aberto para a internet"}
-      - {check: security_group_no_rdp_world, title: "RDP não está aberto para a internet"}
-      - {check: cloudtrail_enabled, title: "Evidências de auditoria estão disponíveis"}
-      - {check: backup_plan_exists, title: "Recuperação está representada como código"}
-
-  BACEN:
-    high:
-      - {check: cloudtrail_enabled, title: "Trilhas de auditoria suportam governança cibernética"}
-      - {check: guardduty_enabled, title: "Monitoramento de ameaças está habilitado"}
-      - {check: backup_plan_exists, title: "Continuidade e recuperação são suportadas"}
-      - {check: iam_no_admin_policy, title: "Privilégios administrativos são restringidos"}
-      - {check: kms_key_exists, title: "Criptografia e gestão de chaves estão disponíveis"}
-    medium:
-      - {check: vpc_flow_logs_enabled, title: "Registros de tráfego de rede são coletados"}
-      - {check: s3_encrypted, title: "Dados armazenados são criptografados"}
-      - {check: s3_public_block_enabled, title: "Armazenamento em nuvem não é público"}
-      - {check: ec2_no_public_ip, title: "Exposição pública de computação é reduzida"}
-      - {check: s3_versioning_enabled, title: "Versionamento apoia recuperação e rastreabilidade"}
-    low:
-      - {check: required_tags_present, title: "Ativos possuem tags de governança"}
-      - {check: security_group_no_ssh_world, title: "Administração remota é restrita"}
-      - {check: security_group_no_rdp_world, title: "RDP público é bloqueado"}
-      - {check: cloudtrail_enabled, title: "Eventos são auditáveis"}
-      - {check: backup_plan_exists, title: "Backup está declarado em IaC"}
+# 30 controls per framework: 10 HIGH, 10 MEDIUM and 10 LOW.
+controls:
+- id: GDPR-H01
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for personal data protection and
+    privacy
+  check: s3_public_block_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H02
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for personal data protection and privacy
+  check: s3_encrypted
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H03
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for personal data protection and privacy
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H04
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for personal data protection
+    and privacy
+  check: iam_no_admin_policy
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H05
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for personal data protection and privacy
+  check: cloudtrail_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H06
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for personal data protection and privacy
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H07
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for personal data protection and privacy
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H08
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for personal data protection and privacy
+  check: guardduty_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H09
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for personal data protection and privacy
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-H10
+  framework: GDPR
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for personal data protection and privacy
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M01
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for personal data protection and privacy
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M02
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for personal data protection
+    and privacy
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M03
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for personal data protection and privacy
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M04
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for personal data protection and privacy
+  check: backup_plan_exists
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M05
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for personal data protection and privacy
+  check: backup_vault_encrypted
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M06
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for personal data protection and privacy
+  check: s3_versioning_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M07
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for personal data protection and privacy
+  check: s3_logging_enabled
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M08
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for personal data protection
+    and privacy
+  check: ec2_no_public_ip
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M09
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for personal data protection and privacy
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-M10
+  framework: GDPR
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for personal data protection and privacy
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L01
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for personal data protection and
+    privacy
+  check: required_tags_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L02
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Require Environment tag for personal data protection and privacy
+  check: environment_tag_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L03
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Require Owner tag for personal data protection and privacy
+  check: owner_tag_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L04
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Require Project tag for personal data protection and privacy
+  check: project_tag_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L05
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for personal data protection and privacy
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L06
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for personal data protection and privacy
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L07
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for personal data protection and privacy
+  check: iam_role_exists
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L08
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for personal data protection and privacy
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L09
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for personal data
+    protection and privacy
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: GDPR-L10
+  framework: GDPR
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for personal data protection and
+    privacy
+  check: restricted_egress_only_https
+  related_frameworks:
+  - NIST_CSF
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H01
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for cybersecurity risk management
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H02
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for cybersecurity risk management
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H03
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for cybersecurity risk management
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H04
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for cybersecurity risk management
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H05
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for cybersecurity risk management
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H06
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for cybersecurity risk management
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H07
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for cybersecurity risk management
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H08
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for cybersecurity risk management
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H09
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for cybersecurity risk management
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-H10
+  framework: NIST_CSF
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for cybersecurity risk management
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M01
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for cybersecurity risk management
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M02
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for cybersecurity risk management
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M03
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for cybersecurity risk management
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M04
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for cybersecurity risk management
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M05
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for cybersecurity risk management
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M06
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for cybersecurity risk management
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M07
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for cybersecurity risk management
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M08
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for cybersecurity risk management
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M09
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for cybersecurity risk management
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-M10
+  framework: NIST_CSF
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for cybersecurity risk management
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L01
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for cybersecurity risk management
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L02
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Require Environment tag for cybersecurity risk management
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L03
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Require Owner tag for cybersecurity risk management
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L04
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Require Project tag for cybersecurity risk management
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L05
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for cybersecurity risk management
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L06
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for cybersecurity risk management
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L07
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for cybersecurity risk management
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L08
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for cybersecurity risk management
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L09
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for cybersecurity
+    risk management
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: NIST_CSF-L10
+  framework: NIST_CSF
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for cybersecurity risk management
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - CIS
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H01
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for secure configuration and cyber
+    hygiene
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H02
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for secure configuration and cyber hygiene
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H03
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for secure configuration and cyber hygiene
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H04
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for secure configuration and
+    cyber hygiene
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H05
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for secure configuration and cyber hygiene
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H06
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for secure configuration and cyber hygiene
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H07
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for secure configuration and cyber
+    hygiene
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H08
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for secure configuration and cyber hygiene
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H09
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for secure configuration and cyber hygiene
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-H10
+  framework: CIS
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for secure configuration and cyber hygiene
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M01
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for secure configuration and cyber hygiene
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M02
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for secure configuration and
+    cyber hygiene
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M03
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for secure configuration and cyber hygiene
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M04
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for secure configuration and cyber hygiene
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M05
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for secure configuration and cyber hygiene
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M06
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for secure configuration and cyber hygiene
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M07
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for secure configuration and cyber hygiene
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M08
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for secure configuration and
+    cyber hygiene
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M09
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for secure configuration and cyber hygiene
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-M10
+  framework: CIS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for secure configuration and cyber hygiene
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L01
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for secure configuration and cyber
+    hygiene
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L02
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Require Environment tag for secure configuration and cyber hygiene
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L03
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Require Owner tag for secure configuration and cyber hygiene
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L04
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Require Project tag for secure configuration and cyber hygiene
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L05
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for secure configuration and cyber hygiene
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L06
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for secure configuration and cyber hygiene
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L07
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for secure configuration and cyber hygiene
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L08
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for secure configuration and cyber hygiene
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L09
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for secure configuration
+    and cyber hygiene
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: CIS-L10
+  framework: CIS
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for secure configuration and cyber
+    hygiene
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - ISO27001
+  - PCI_DSS
+- id: ISO27001-H01
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for information security management
+    controls
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H02
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for information security management controls
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H03
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for information security management controls
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H04
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for information security management
+    controls
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H05
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for information security management controls
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H06
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for information security management controls
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H07
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for information security management
+    controls
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H08
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for information security management controls
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H09
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for information security management
+    controls
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-H10
+  framework: ISO27001
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for information security management
+    controls
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M01
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for information security management controls
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M02
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for information security management
+    controls
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M03
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for information security management controls
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M04
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for information security management controls
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M05
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for information security management controls
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M06
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for information security management controls
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M07
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for information security management
+    controls
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M08
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for information security management
+    controls
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M09
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for information security management controls
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-M10
+  framework: ISO27001
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for information security management controls
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L01
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for information security management
+    controls
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L02
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Require Environment tag for information security management controls
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L03
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Require Owner tag for information security management controls
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L04
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Require Project tag for information security management controls
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L05
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for information security management
+    controls
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L06
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for information security management controls
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L07
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for information security management controls
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L08
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for information security management controls
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L09
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for information
+    security management controls
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: ISO27001-L10
+  framework: ISO27001
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for information security management
+    controls
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - PCI_DSS
+- id: PCI_DSS-H01
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for cardholder data security
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H02
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for cardholder data security
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H03
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for cardholder data security
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H04
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for cardholder data security
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H05
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for cardholder data security
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H06
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for cardholder data security
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H07
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for cardholder data security
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H08
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for cardholder data security
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H09
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for cardholder data security
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-H10
+  framework: PCI_DSS
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for cardholder data security
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M01
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for cardholder data security
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M02
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for cardholder data security
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M03
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for cardholder data security
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M04
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for cardholder data security
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M05
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for cardholder data security
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M06
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for cardholder data security
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M07
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for cardholder data security
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M08
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for cardholder data security
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M09
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for cardholder data security
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-M10
+  framework: PCI_DSS
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for cardholder data security
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L01
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for cardholder data security
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L02
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Require Environment tag for cardholder data security
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L03
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Require Owner tag for cardholder data security
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L04
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Require Project tag for cardholder data security
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L05
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for cardholder data security
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L06
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for cardholder data security
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L07
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for cardholder data security
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L08
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for cardholder data security
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L09
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for cardholder
+    data security
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: PCI_DSS-L10
+  framework: PCI_DSS
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for cardholder data security
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H01
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for trust services criteria
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H02
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for trust services criteria
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H03
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for trust services criteria
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H04
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for trust services criteria
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H05
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for trust services criteria
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H06
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for trust services criteria
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H07
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for trust services criteria
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H08
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for trust services criteria
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H09
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for trust services criteria
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-H10
+  framework: SOC2
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for trust services criteria
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M01
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for trust services criteria
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M02
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for trust services criteria
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M03
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for trust services criteria
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M04
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for trust services criteria
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M05
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for trust services criteria
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M06
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for trust services criteria
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M07
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for trust services criteria
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M08
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for trust services criteria
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M09
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for trust services criteria
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-M10
+  framework: SOC2
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for trust services criteria
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L01
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for trust services criteria
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L02
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Require Environment tag for trust services criteria
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L03
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Require Owner tag for trust services criteria
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L04
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Require Project tag for trust services criteria
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L05
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for trust services criteria
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L06
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for trust services criteria
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L07
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for trust services criteria
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L08
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for trust services criteria
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L09
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for trust services
+    criteria
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: SOC2-L10
+  framework: SOC2
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for trust services criteria
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H01
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for adversary technique mitigation
+    and detection
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H02
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for adversary technique mitigation and detection
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H03
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for adversary technique mitigation and detection
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H04
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for adversary technique mitigation
+    and detection
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H05
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for adversary technique mitigation and detection
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H06
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for adversary technique mitigation and detection
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H07
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for adversary technique mitigation
+    and detection
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H08
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for adversary technique mitigation and detection
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H09
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for adversary technique mitigation and
+    detection
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-H10
+  framework: MITRE
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for adversary technique mitigation and
+    detection
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M01
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for adversary technique mitigation and detection
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M02
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for adversary technique mitigation
+    and detection
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M03
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for adversary technique mitigation and detection
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M04
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for adversary technique mitigation and detection
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M05
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for adversary technique mitigation and detection
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M06
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for adversary technique mitigation and detection
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M07
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for adversary technique mitigation and
+    detection
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M08
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for adversary technique mitigation
+    and detection
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M09
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for adversary technique mitigation and
+    detection
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-M10
+  framework: MITRE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for adversary technique mitigation and detection
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L01
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for adversary technique mitigation
+    and detection
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L02
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Require Environment tag for adversary technique mitigation and detection
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L03
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Require Owner tag for adversary technique mitigation and detection
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L04
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Require Project tag for adversary technique mitigation and detection
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L05
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for adversary technique mitigation and
+    detection
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L06
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for adversary technique mitigation and detection
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L07
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for adversary technique mitigation and detection
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L08
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for adversary technique mitigation and
+    detection
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L09
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for adversary technique
+    mitigation and detection
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: MITRE-L10
+  framework: MITRE
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for adversary technique mitigation
+    and detection
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H01
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for Brazilian personal data protection
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H02
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for Brazilian personal data protection
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H03
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for Brazilian personal data protection
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H04
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for Brazilian personal data protection
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H05
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for Brazilian personal data protection
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H06
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for Brazilian personal data protection
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H07
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for Brazilian personal data protection
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H08
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for Brazilian personal data protection
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H09
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for Brazilian personal data protection
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-H10
+  framework: LGPD
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for Brazilian personal data protection
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M01
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for Brazilian personal data protection
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M02
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for Brazilian personal data
+    protection
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M03
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for Brazilian personal data protection
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M04
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for Brazilian personal data protection
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M05
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for Brazilian personal data protection
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M06
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for Brazilian personal data protection
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M07
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for Brazilian personal data protection
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M08
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for Brazilian personal data
+    protection
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M09
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for Brazilian personal data protection
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-M10
+  framework: LGPD
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for Brazilian personal data protection
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L01
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for Brazilian personal data protection
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L02
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Require Environment tag for Brazilian personal data protection
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L03
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Require Owner tag for Brazilian personal data protection
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L04
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Require Project tag for Brazilian personal data protection
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L05
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for Brazilian personal data protection
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L06
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for Brazilian personal data protection
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L07
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for Brazilian personal data protection
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L08
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for Brazilian personal data protection
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L09
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for Brazilian personal
+    data protection
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: LGPD-L10
+  framework: LGPD
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for Brazilian personal data protection
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H01
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for Brazilian financial sector cyber
+    resilience
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H02
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for Brazilian financial sector cyber resilience
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H03
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for Brazilian financial sector cyber resilience
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H04
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for Brazilian financial sector
+    cyber resilience
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H05
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for Brazilian financial sector cyber resilience
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H06
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for Brazilian financial sector cyber resilience
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H07
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for Brazilian financial sector cyber
+    resilience
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H08
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for Brazilian financial sector cyber resilience
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H09
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for Brazilian financial sector cyber
+    resilience
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-H10
+  framework: BACEN
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for Brazilian financial sector cyber
+    resilience
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M01
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for Brazilian financial sector cyber resilience
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M02
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for Brazilian financial sector
+    cyber resilience
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M03
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for Brazilian financial sector cyber resilience
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M04
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for Brazilian financial sector cyber resilience
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M05
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for Brazilian financial sector cyber resilience
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M06
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for Brazilian financial sector cyber resilience
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M07
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for Brazilian financial sector cyber
+    resilience
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M08
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for Brazilian financial sector
+    cyber resilience
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M09
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for Brazilian financial sector cyber
+    resilience
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-M10
+  framework: BACEN
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for Brazilian financial sector cyber resilience
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L01
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for Brazilian financial sector cyber
+    resilience
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L02
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Require Environment tag for Brazilian financial sector cyber resilience
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L03
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Require Owner tag for Brazilian financial sector cyber resilience
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L04
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Require Project tag for Brazilian financial sector cyber resilience
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L05
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for Brazilian financial sector cyber
+    resilience
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L06
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for Brazilian financial sector cyber resilience
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L07
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for Brazilian financial sector cyber resilience
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L08
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for Brazilian financial sector cyber resilience
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L09
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for Brazilian financial
+    sector cyber resilience
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: BACEN-L10
+  framework: BACEN
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for Brazilian financial sector
+    cyber resilience
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H01
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Block public access to sensitive storage for Brazilian Open Finance security,
+    privacy and traceability
+  check: s3_public_block_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H02
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Encrypt object storage at rest for Brazilian Open Finance security, privacy
+    and traceability
+  check: s3_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H03
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Enable KMS key rotation for Brazilian Open Finance security, privacy and
+    traceability
+  check: kms_key_rotation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H04
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Prevent wildcard administrator IAM policies for Brazilian Open Finance security,
+    privacy and traceability
+  check: iam_no_admin_policy
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H05
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Enable centralized audit trail for Brazilian Open Finance security, privacy
+    and traceability
+  check: cloudtrail_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H06
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Enable multi-region CloudTrail for Brazilian Open Finance security, privacy
+    and traceability
+  check: cloudtrail_multi_region_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H07
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Enable CloudTrail log file validation for Brazilian Open Finance security,
+    privacy and traceability
+  check: cloudtrail_log_validation_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H08
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Enable threat detection service for Brazilian Open Finance security, privacy
+    and traceability
+  check: guardduty_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H09
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Prevent SSH exposure to the internet for Brazilian Open Finance security,
+    privacy and traceability
+  check: security_group_no_ssh_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-H10
+  framework: OPEN_FINANCE
+  severity: HIGH
+  score: 5
+  title: Prevent RDP exposure to the internet for Brazilian Open Finance security,
+    privacy and traceability
+  check: security_group_no_rdp_world
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M01
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Enable VPC network flow logging for Brazilian Open Finance security, privacy
+    and traceability
+  check: vpc_flow_logs_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M02
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Retain operational logs for at least 90 days for Brazilian Open Finance security,
+    privacy and traceability
+  check: cloudwatch_log_retention_90_days
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M03
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt centralized logs for Brazilian Open Finance security, privacy and
+    traceability
+  check: cloudwatch_logs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M04
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Define backup plan for Brazilian Open Finance security, privacy and traceability
+  check: backup_plan_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M05
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt backup vault for Brazilian Open Finance security, privacy and traceability
+  check: backup_vault_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M06
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Enable object versioning for Brazilian Open Finance security, privacy and
+    traceability
+  check: s3_versioning_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M07
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Enable object storage access logging for Brazilian Open Finance security,
+    privacy and traceability
+  check: s3_logging_enabled
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M08
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Prevent direct public IP exposure on compute for Brazilian Open Finance security,
+    privacy and traceability
+  check: ec2_no_public_ip
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M09
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Require IMDSv2 on compute instances for Brazilian Open Finance security,
+    privacy and traceability
+  check: ec2_imdsv2_required
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-M10
+  framework: OPEN_FINANCE
+  severity: MEDIUM
+  score: 3
+  title: Encrypt compute block storage for Brazilian Open Finance security, privacy
+    and traceability
+  check: ec2_ebs_encrypted
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L01
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Require governance tags on key resources for Brazilian Open Finance security,
+    privacy and traceability
+  check: required_tags_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L02
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Require Environment tag for Brazilian Open Finance security, privacy and
+    traceability
+  check: environment_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L03
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Require Owner tag for Brazilian Open Finance security, privacy and traceability
+  check: owner_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L04
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Require Project tag for Brazilian Open Finance security, privacy and traceability
+  check: project_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L05
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Identify Terraform-managed resources for Brazilian Open Finance security,
+    privacy and traceability
+  check: managed_by_terraform_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L06
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Classify data storage resources for Brazilian Open Finance security, privacy
+    and traceability
+  check: s3_confidential_tag_present
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L07
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Use IAM roles for service access for Brazilian Open Finance security, privacy
+    and traceability
+  check: iam_role_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L08
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Attach instance profile to compute for Brazilian Open Finance security, privacy
+    and traceability
+  check: iam_instance_profile_exists
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L09
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Disable automatic public IP assignment on private subnets for Brazilian Open
+    Finance security, privacy and traceability
+  check: private_subnet_no_public_ip_mapping
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001
+- id: OPEN_FINANCE-L10
+  framework: OPEN_FINANCE
+  severity: LOW
+  score: 1
+  title: Restrict default outbound traffic to HTTPS for Brazilian Open Finance security,
+    privacy and traceability
+  check: restricted_egress_only_https
+  related_frameworks:
+  - GDPR
+  - NIST_CSF
+  - CIS
+  - ISO27001

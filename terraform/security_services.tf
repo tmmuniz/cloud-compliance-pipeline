@@ -1,88 +1,58 @@
-resource "aws_kms_key" "main" {
-  description             = "Portfolio KMS key evaluated by compliance pipeline"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
-  tags                    = local.common_tags
+resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+  name              = "/aws/vpc/${var.PROJECT}/flow-logs"
+  retention_in_days = 90
+  kms_key_id        = aws_kms_key.main.arn
+
+  tags = {
+    Project     = var.PROJECT
+    Environment = var.ENVIRONMENT
+    Owner       = var.OWNER
+  }
 }
 
 resource "aws_cloudtrail" "main" {
-  name                          = "${var.project}-trail"
-  s3_bucket_name                = aws_s3_bucket.audit_logs.id
+  name                          = "${var.PROJECT}-trail"
+  s3_bucket_name                = aws_s3_bucket.data.bucket
   include_global_service_events = true
   is_multi_region_trail         = true
-  enable_logging                = true
+  enable_log_file_validation    = true
+  kms_key_id                    = aws_kms_key.main.arn
 
-  depends_on = [aws_s3_bucket_policy.audit_logs]
-  tags       = local.common_tags
-}
-
-resource "aws_s3_bucket" "audit_logs" {
-  bucket_prefix = "cloud-compliance-audit-logs-"
-  tags          = local.common_tags
-}
-
-resource "aws_s3_bucket_public_access_block" "audit_logs" {
-  bucket = aws_s3_bucket.audit_logs.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-data "aws_iam_policy_document" "cloudtrail_bucket" {
-  statement {
-    sid = "AWSCloudTrailAclCheck"
-    principals {
-      type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com"]
-    }
-    actions   = ["s3:GetBucketAcl"]
-    resources = [aws_s3_bucket.audit_logs.arn]
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
   }
 
-  statement {
-    sid = "AWSCloudTrailWrite"
-    principals {
-      type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com"]
-    }
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.audit_logs.arn}/AWSLogs/*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "s3:x-amz-acl"
-      values   = ["bucket-owner-full-control"]
-    }
+  tags = {
+    Project     = var.PROJECT
+    Environment = var.ENVIRONMENT
+    Owner       = var.OWNER
   }
-}
-
-resource "aws_s3_bucket_policy" "audit_logs" {
-  bucket = aws_s3_bucket.audit_logs.id
-  policy = data.aws_iam_policy_document.cloudtrail_bucket.json
 }
 
 resource "aws_guardduty_detector" "main" {
   enable = true
-  tags   = local.common_tags
-}
 
-resource "aws_flow_log" "default_vpc" {
-  log_destination_type = "s3"
-  log_destination      = aws_s3_bucket.audit_logs.arn
-  traffic_type         = "ALL"
-  vpc_id               = data.aws_vpc.default.id
-  tags                 = local.common_tags
+  tags = {
+    Project     = var.PROJECT
+    Environment = var.ENVIRONMENT
+    Owner       = var.OWNER
+  }
 }
 
 resource "aws_backup_vault" "main" {
-  name = "${var.project}-backup-vault"
-  tags = local.common_tags
+  name        = "${var.PROJECT}-backup-vault"
+  kms_key_arn = aws_kms_key.main.arn
+
+  tags = {
+    Project     = var.PROJECT
+    Environment = var.ENVIRONMENT
+    Owner       = var.OWNER
+  }
 }
 
 resource "aws_backup_plan" "main" {
-  name = "${var.project}-backup-plan"
+  name = "${var.PROJECT}-backup-plan"
 
   rule {
     rule_name         = "daily-backup"
@@ -90,5 +60,9 @@ resource "aws_backup_plan" "main" {
     schedule          = "cron(0 5 ? * * *)"
   }
 
-  tags = local.common_tags
+  tags = {
+    Project     = var.PROJECT
+    Environment = var.ENVIRONMENT
+    Owner       = var.OWNER
+  }
 }

@@ -1,203 +1,160 @@
 # Cloud Compliance Pipeline for AWS Terraform
 
-Portfolio project for **Cloud Security**, **GRC**, **DevSecOps**, **Policy-as-Code**, and **Compliance-as-Code**.
+This repository is a portfolio-ready **Compliance-as-Code** project for AWS infrastructure defined with Terraform.
 
-The pipeline audits AWS Terraform code using a single reusable OPA/Rego policy engine and maps the same technical checks to multiple compliance and cybersecurity frameworks.
+The pipeline evaluates a Terraform plan against multiple cybersecurity and regulatory frameworks using a single reusable OPA/Rego policy engine.
 
 ## Supported frameworks
 
-International frameworks:
-
 - GDPR
-- NIST_CSF
-- CIS
-- ISO27001
-- PCI_DSS
-- SOC2
-- MITRE
-
-Brazilian frameworks:
-
+- NIST CSF
+- CIS Controls
+- ISO 27001
+- PCI DSS
+- SOC 2
+- MITRE ATT&CK
 - LGPD
 - BACEN
+- Open Finance
 
-Each framework contains 15 mapped audit items:
+Each framework has **30 controls**:
 
-- 5 HIGH items, worth 5 points each
-- 5 MEDIUM items, worth 3 points each
-- 5 LOW items, worth 1 point each
+- 10 HIGH controls, worth 5 points each
+- 10 MEDIUM controls, worth 3 points each
+- 10 LOW controls, worth 1 point each
+
+Total per framework: **90 points**.
+
+## Current portfolio scope
+
+This project is focused on **detecting compliance gaps in the Terraform plan**.
+
+It does **not** deploy infrastructure, does **not** require AWS credentials, and does **not** use a remote Terraform state bucket.
+
+The AWS provider is configured in demo mode with mock credentials and validation skips so GitHub Actions can generate a local plan and audit it safely.
 
 ## Architecture
 
 ```text
-User-provided Terraform plan JSON input
-      ↓
-OPA/Rego reusable checks
-      ↓
-Framework control mapping
-      ↓
-JSON + HTML compliance report
+GitHub Actions workflow_dispatch
+  ↓
+One independent job per framework
+  ↓
+Terraform init without backend
+  ↓
+Terraform plan generated locally with -refresh=false
+  ↓
+terraform show -json
+  ↓
+OPA/Rego compliance evaluation
+  ↓
+HTML compliance report per framework
+  ↓
+Plan files removed from the runner
 ```
 
-## How the user provides the Terraform plan JSON
+## Why the plan is generated in the runner
 
-The user provides the Terraform plan JSON directly in the GitHub Actions workflow input named `TFPLAN_JSON`.
+The Terraform plan JSON may contain sensitive infrastructure details. For this reason, this project does **not** require the user to commit, upload, or store `tfplan.json` in GitHub Secrets.
 
-This means the Terraform code can be created, edited, or generated outside this repository, including from an AWS-based environment. The pipeline receives only the generated `tfplan.json` content and audits it with OPA/Rego.
+The file is generated temporarily during the pipeline execution and removed before the job finishes.
 
-Example local command to generate the JSON before pasting it into the workflow input:
+## Required GitHub Actions inputs
 
-```bash
-terraform init
-terraform plan -out=tfplan
-terraform show -json tfplan > tfplan.json
-```
+When running the workflow manually, provide:
 
-Then paste the full content of `tfplan.json` into the workflow input `TFPLAN_JSON`.
+| Input | Description | Example |
+|---|---|---|
+| `FRAMEWORK` | Framework to execute. Use `ALL` for all frameworks. | `ALL` |
+| `AWS_REGION` | AWS region used only to render the local Terraform plan. | `us-east-1` |
 
-## How to run in GitHub Actions
-
-1. Upload this project to a GitHub repository.
-2. Add or replace the AWS Terraform code inside the `terraform/` directory.
-3. Go to **Actions**.
-4. Select **Cloud Compliance Pipeline**.
-5. Click **Run workflow**.
-6. In `FRAMEWORK`, choose `ALL` or one or more frameworks separated by comma.
-7. In `TFPLAN_JSON`, paste the full Terraform plan JSON content.
-8. Download the generated HTML report from the workflow artifacts.
-
-## Example `FRAMEWORK` input
-
-Run all frameworks:
+Examples for `FRAMEWORK`:
 
 ```text
 ALL
+LGPD
+ISO27001
+LGPD,ISO27001,NIST_CSF
+OPEN_FINANCE,BACEN
 ```
 
-Run only Brazilian and ISO/NIST frameworks:
+## Workflow behavior
+
+The workflow has one job per framework:
+
+- `GDPR`
+- `NIST_CSF`
+- `CIS`
+- `ISO27001`
+- `PCI_DSS`
+- `SOC2`
+- `MITRE`
+- `LGPD`
+- `BACEN`
+- `OPEN_FINANCE`
+
+If a compliance control fails, the pipeline **does not stop**. The failed control is recorded in the JSON and HTML reports as `FAIL`.
+
+This separates pipeline execution errors from compliance findings:
+
+- Syntax/runtime error: pipeline failure
+- Compliance gap: pipeline succeeds and report shows `FAIL`
+
+## Project structure
 
 ```text
-LGPD,BACEN,ISO27001,NIST_CSF
+cloud-compliance-pipeline/
+├── .github/workflows/compliance.yml
+├── terraform/
+│   ├── providers.tf
+│   ├── variables.tf
+│   ├── main.tf
+│   ├── network.tf
+│   ├── iam.tf
+│   ├── s3.tf
+│   ├── compute.tf
+│   └── security_services.tf
+├── policy/
+│   ├── compliance.rego
+│   └── controls.yaml
+├── scripts/
+│   ├── evaluate.py
+│   └── render_html.py
+├── reports/
+│   └── .gitkeep
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
-
-## Main files
-
-```text
-.github/workflows/compliance.yml   GitHub Actions pipeline
-policy/compliance.rego             Single reusable OPA policy file
-policy/controls.yaml               Framework-to-control mapping
-scripts/evaluate.py                OPA evaluator and scoring engine
-scripts/render_html.py             HTML report generator
-terraform/                         Optional sample AWS Terraform code
-reports/                           Generated reports
-```
-
-## DRY design
-
-The project avoids one Rego file per framework.
-
-Instead, it uses:
-
-- one generic Rego policy file;
-- one YAML framework mapping file;
-- one Python evaluator;
-- one HTML report generator.
-
-This means the same reusable check, such as `s3_encrypted`, can support GDPR, LGPD, ISO 27001, PCI DSS, SOC 2, BACEN, and other frameworks.
-
-## Scoring model
-
-| Severity | Points |
-|---|---:|
-| HIGH | 5 |
-| MEDIUM | 3 |
-| LOW | 1 |
-
-The final score is calculated only against the selected frameworks.
-
-```text
-final_score = achieved_points / total_possible_points * 100
-```
-
-## Report output
-
-The final report is generated at:
-
-```text
-reports/compliance-report.html
-```
-
-The report includes:
-
-- selected frameworks;
-- final percentage score;
-- achieved points;
-- total possible points;
-- reusable control summary;
-- related frameworks per reusable check;
-- detailed PASS/FAIL result for each framework item.
 
 ## Local execution
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Install OPA:
-
-```bash
-curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
-chmod +x opa
-sudo mv opa /usr/local/bin/opa
-```
-
-Generate a Terraform plan JSON locally:
-
 ```bash
 cd terraform
-terraform init
-terraform plan -out=tfplan
+terraform init -backend=false
+terraform validate
+terraform plan -refresh=false -out=tfplan
 terraform show -json tfplan > ../tfplan.json
 cd ..
-```
-
-Run the compliance evaluation:
-
-```bash
-python scripts/evaluate.py \
-  --plan tfplan.json \
-  --controls policy/controls.yaml \
-  --rego policy/compliance.rego \
-  --framework "LGPD,ISO27001,NIST_CSF" \
-  --output reports/results.json
-```
-
-Generate the HTML report:
-
-```bash
-python scripts/render_html.py \
-  --input reports/results.json \
-  --output reports/compliance-report.html
+python3 scripts/evaluate.py   --plan tfplan.json   --controls policy/controls.yaml   --framework ALL   --output reports/results.json
+python3 scripts/render_html.py   --input reports/results.json   --output reports/compliance-report.html
 ```
 
 ## Portfolio positioning
 
-Suggested description:
+This project demonstrates:
 
-> A reusable compliance-as-code pipeline that evaluates AWS Terraform infrastructure against multiple regulatory and cybersecurity frameworks using a single DRY OPA/Rego policy engine and framework-specific control mappings.
+- Cloud Security
+- GRC Engineering
+- DevSecOps
+- Compliance-as-Code
+- Policy-as-Code
+- Terraform plan analysis
+- OPA/Rego
+- AWS security controls
+- GitHub Actions automation
+- Multi-framework control mapping
 
-## Important note
+Suggested LinkedIn/GitHub description:
 
-This project is designed for portfolio, educational, and architecture demonstration purposes. The framework mappings are simplified technical mappings and should not be treated as a formal legal, regulatory, or audit certification opinion.
-
-
-## GitHub Actions inputs
-
-| Input | Description | Example |
-|---|---|---|
-| `FRAMEWORK` | Framework selection. Use `ALL` or a comma-separated list. | `ALL` |
-| `TFPLAN_JSON` | Full Terraform plan JSON content to audit. | `{ "format_version": "..." }` |
-
-All project-level input variables used by the workflow are written in uppercase.
+> Compliance-as-Code pipeline for AWS Terraform plans using OPA/Rego, GitHub Actions, and multi-framework control mapping across GDPR, LGPD, NIST CSF, CIS Controls, ISO 27001, PCI DSS, SOC 2, MITRE ATT&CK, BACEN, and Open Finance.
