@@ -1,0 +1,186 @@
+name: Cloud Compliance Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      FRAMEWORK:
+        description: "Framework to run: ALL, GDPR, NIST_CSF, CIS, ISO27001, PCI_DSS, SOC2, MITRE, LGPD, BACEN, OPEN_FINANCE"
+        required: true
+        default: "ALL"
+        type: string
+      AWS_REGION:
+        description: "AWS region used to initialize Terraform and render the plan"
+        required: true
+        default: "us-east-1"
+        type: string
+      TERRAFORM_STATE_BUCKET:
+        description: "S3 bucket name used to store the Terraform state file"
+        required: true
+        type: string
+      ARN_OIDC:
+        description: "AWS IAM Role ARN assumed by GitHub Actions through OIDC"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  FRAMEWORK: ${{ github.event.inputs.FRAMEWORK }}
+  AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+  TERRAFORM_STATE_BUCKET: ${{ github.event.inputs.TERRAFORM_STATE_BUCKET }}
+  ARN_OIDC: ${{ github.event.inputs.ARN_OIDC }}
+  TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  compliance_pipeline:
+    name: Cloud Compliance Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials through OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ARN_OIDC }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Setup OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+          opa version
+
+      - name: Terraform init using remote S3 state bucket
+        working-directory: terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=${TERRAFORM_STATE_BUCKET}" \
+            -backend-config="region=${AWS_REGION}"
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Generate Terraform plan JSON in the runner
+        working-directory: terraform
+        run: |
+          terraform plan -refresh=false -out=tfplan
+          terraform show -json tfplan > ../tfplan.json
+
+      - name: Run GDPR checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'GDPR') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework GDPR --output reports/results-gdpr.json
+
+      - name: Run NIST CSF checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'NIST_CSF') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework NIST_CSF --output reports/results-nist-csf.json
+
+      - name: Run CIS Controls checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'CIS') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework CIS --output reports/results-cis.json
+
+      - name: Run ISO 27001 checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'ISO27001') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework ISO27001 --output reports/results-iso27001.json
+
+      - name: Run PCI DSS checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'PCI_DSS') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework PCI_DSS --output reports/results-pci-dss.json
+
+      - name: Run SOC 2 checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'SOC2') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework SOC2 --output reports/results-soc2.json
+
+      - name: Run MITRE ATT&CK checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'MITRE') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework MITRE --output reports/results-mitre.json
+
+      - name: Run LGPD checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'LGPD') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework LGPD --output reports/results-lgpd.json
+
+      - name: Run BACEN checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'BACEN') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework BACEN --output reports/results-bacen.json
+
+      - name: Run Open Finance checks
+        if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'OPEN_FINANCE') }}
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --frameworks policy/frameworks.yaml --framework OPEN_FINANCE --output reports/results-open-finance.json
+
+      - name: Merge framework results
+        if: always()
+        run: |
+          python3 scripts/merge_results.py --input-dir reports --output reports/results-all-frameworks.json
+
+      - name: Generate single consolidated HTML report
+        if: always()
+        run: |
+          python3 scripts/render_html.py --input reports/results-all-frameworks.json --output reports/cloud-compliance-report.html
+
+      - name: Remove sensitive Terraform plan files
+        if: always()
+        run: |
+          rm -f terraform/tfplan tfplan.json terraform/tfplan.json
+
+      - name: Upload consolidated HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-report
+          path: reports/cloud-compliance-report.html
+          if-no-files-found: error
+
+      - name: Upload raw JSON results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-compliance-json-results
+          path: reports/results-*.json
+          if-no-files-found: ignore
