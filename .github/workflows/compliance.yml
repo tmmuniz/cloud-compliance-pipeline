@@ -169,10 +169,12 @@ jobs:
             exit 1
           fi
 
-          echo "TST=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+          TST=$(date +"%Y%m%d%H%M")
       
-          aws s3 cp reports/results-*.json \
-            s3://$ADMIN_BUCKET_NAME/cloud-compliance/
+          for file in reports/results-*.json; do
+            aws s3 cp "$file" \
+              "s3://$ADMIN_BUCKET_NAME/cloud-compliance/$TST/$(basename "$file")"
+          done
       
           aws s3 cp reports/compliance-report.html \
-            s3://$ADMIN_BUCKET_NAME/cloud-compliance/compliance-report-$TST.html
+            "s3://$ADMIN_BUCKET_NAME/cloud-compliance/$TST/compliance-report-$TST.html"
