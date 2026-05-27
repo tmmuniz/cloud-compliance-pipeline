@@ -176,5 +176,5 @@ jobs:
               "s3://$ADMIN_BUCKET_NAME/cloud-compliance/$TST/$(basename "$file")"
           done
       
-          aws s3 cp reports/compliance-report.html \
+          aws s3 cp reports/cloud-compliance-report.html \
             "s3://$ADMIN_BUCKET_NAME/cloud-compliance/$TST/compliance-report-$TST.html"
