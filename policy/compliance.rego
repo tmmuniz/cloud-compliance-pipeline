@@ -4,30 +4,30 @@ import rego.v1
 
 resources := object.get(input, "resource_changes", [])
 
-active_resource(resource) if {
+active_resources := [res |
 	some i
-	resource := resources[i]
-	not is_delete_action(resource)
-}
+	res := resources[i]
+	not is_delete_action(res)
+]
 
-is_delete_action(resource) if {
-	actions := object.get(object.get(resource, "change", {}), "actions", [])
+is_delete_action(res) if {
+	actions := object.get(object.get(res, "change", {}), "actions", [])
 	actions[_] == "delete"
 }
 
-resource_after(resource) := value if {
-	value := object.get(object.get(resource, "change", {}), "after", {})
+resource_after(res) := value if {
+	value := object.get(object.get(res, "change", {}), "after", {})
 }
 
 resource_exists(resource_type) if {
-	active_resource(resource)
-	resource.type == resource_type
+	res := active_resources[_]
+	res.type == resource_type
 }
 
 resource_has_tag(resource_type, tag_key) if {
-	active_resource(resource)
-	resource.type == resource_type
-	after_value := resource_after(resource)
+	res := active_resources[_]
+	res.type == resource_type
+	after_value := resource_after(res)
 	tags := object.get(after_value, "tags", {})
 	tags[tag_key]
 }
