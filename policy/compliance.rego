@@ -1,272 +1,309 @@
 package cloud.compliance
 
+import rego.v1
+
 resources := object.get(input, "resource_changes", [])
 
-resource_exists(type) if {
-  some i
-  resources[i].type == type
-  resources[i].change.after != null
+active_resource(resource) if {
+	some i
+	resource := resources[i]
+	not is_delete_action(resource)
 }
 
-resource_after(type, after) if {
-  some i
-  resources[i].type == type
-  resources[i].change.after != null
-  after := resources[i].change.after
+is_delete_action(resource) if {
+	actions := object.get(object.get(resource, "change", {}), "actions", [])
+	actions[_] == "delete"
 }
 
-resource_has_tag(type, tag) if {
-  resource_after(type, after)
-  tags := object.get(after, "tags", {})
-  tags[tag]
+resource_after(resource) := value if {
+	value := object.get(object.get(resource, "change", {}), "after", {})
 }
 
-resource_has_tag(type, tag) if {
-  resource_after(type, after)
-  tags_all := object.get(after, "tags_all", {})
-  tags_all[tag]
+resource_exists(resource_type) if {
+	active_resource(resource)
+	resource.type == resource_type
 }
 
-resource_tag_equals(type, tag, expected) if {
-  resource_after(type, after)
-  tags := object.get(after, "tags", {})
-  tags[tag] == expected
+resource_has_tag(resource_type, tag_key) if {
+	active_resource(resource)
+	resource.type == resource_type
+	after_value := resource_after(resource)
+	tags := object.get(after_value, "tags", {})
+	tags[tag_key]
 }
 
-resource_tag_equals(type, tag, expected) if {
-  resource_after(type, after)
-  tags_all := object.get(after, "tags_all", {})
-  tags_all[tag] == expected
-}
-
-# Identity and access
-iam_no_admin_policy if {
-  not iam_admin_policy
-}
-
-iam_admin_policy if {
-  resource_after("aws_iam_policy", after)
-  policy := json.unmarshal(after.policy)
-  statement := policy.Statement[_]
-  wildcard_action(statement.Action)
-  wildcard_resource(statement.Resource)
-}
-
-wildcard_action(action) if {
-  action == "*"
-}
-
-wildcard_action(action) if {
-  action[_] == "*"
-}
-
-wildcard_resource(resource) if {
-  resource == "*"
-}
-
-wildcard_resource(resource) if {
-  resource[_] == "*"
-}
-
-iam_role_exists if {
-  resource_exists("aws_iam_role")
-}
-
-iam_instance_profile_exists if {
-  resource_exists("aws_iam_instance_profile")
-}
-
-# S3 and data protection
-s3_bucket_exists if {
-  resource_exists("aws_s3_bucket")
-}
+# --------------------------------------------------------------------
+# S3 Controls
+# --------------------------------------------------------------------
 
 s3_public_block_enabled if {
-  resource_after("aws_s3_bucket_public_access_block", after)
-  after.block_public_acls == true
-  after.block_public_policy == true
-  after.ignore_public_acls == true
-  after.restrict_public_buckets == true
+	active_resource(resource)
+	resource.type == "aws_s3_bucket_public_access_block"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "block_public_acls", false) == true
+	object.get(after_value, "block_public_policy", false) == true
+	object.get(after_value, "ignore_public_acls", false) == true
+	object.get(after_value, "restrict_public_buckets", false) == true
 }
 
 s3_encrypted if {
-  resource_exists("aws_s3_bucket_server_side_encryption_configuration")
+	resource_exists("aws_s3_bucket_server_side_encryption_configuration")
 }
 
 s3_versioning_enabled if {
-  resource_after("aws_s3_bucket_versioning", after)
-  after.versioning_configuration[0].status == "Enabled"
+	active_resource(resource)
+	resource.type == "aws_s3_bucket_versioning"
+	after_value := resource_after(resource)
+
+	config := object.get(after_value, "versioning_configuration", [])
+	config[_].status == "Enabled"
 }
 
 s3_logging_enabled if {
-  resource_exists("aws_s3_bucket_logging")
+	resource_exists("aws_s3_bucket_logging")
 }
 
 s3_confidential_tag_present if {
-  resource_has_tag("aws_s3_bucket", "DataClass")
+	resource_has_tag("aws_s3_bucket", "Confidentiality")
 }
 
-# Encryption and key management
-kms_key_exists if {
-  resource_exists("aws_kms_key")
-}
+# --------------------------------------------------------------------
+# KMS Controls
+# --------------------------------------------------------------------
 
 kms_key_rotation_enabled if {
-  resource_after("aws_kms_key", after)
-  after.enable_key_rotation == true
+	active_resource(resource)
+	resource.type == "aws_kms_key"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "enable_key_rotation", false) == true
 }
 
-# Network security
-ec2_no_public_ip if {
-  not ec2_public_ip_enabled
+# --------------------------------------------------------------------
+# IAM Controls
+# --------------------------------------------------------------------
+
+iam_role_exists if {
+	resource_exists("aws_iam_role")
 }
 
-ec2_public_ip_enabled if {
-  resource_after("aws_instance", after)
-  after.associate_public_ip_address == true
+iam_instance_profile_exists if {
+	resource_exists("aws_iam_instance_profile")
 }
 
-security_group_no_ssh_world if {
-  not sg_ingress_open_to_world("tcp", 22)
+iam_no_admin_policy if {
+	not iam_admin_policy_detected
 }
 
-security_group_no_rdp_world if {
-  not sg_ingress_open_to_world("tcp", 3389)
+iam_admin_policy_detected if {
+	active_resource(resource)
+	resource.type == "aws_iam_policy"
+	after_value := resource_after(resource)
+
+	policy := object.get(after_value, "policy", "")
+	contains(policy, "\"Action\":\"*\"")
+	contains(policy, "\"Resource\":\"*\"")
 }
 
-security_group_no_all_ports_world if {
-  not sg_all_ports_world
+iam_admin_policy_detected if {
+	active_resource(resource)
+	resource.type == "aws_iam_policy"
+	after_value := resource_after(resource)
+
+	policy := object.get(after_value, "policy", "")
+	contains(policy, "\"Action\": \"*\"")
+	contains(policy, "\"Resource\": \"*\"")
 }
 
-sg_all_ports_world if {
-  resource_after("aws_security_group", after)
-  rule := after.ingress[_]
-  rule.from_port == 0
-  rule.to_port == 0
-  rule.cidr_blocks[_] == "0.0.0.0/0"
-}
+# --------------------------------------------------------------------
+# Logging and Monitoring Controls
+# --------------------------------------------------------------------
 
-sg_ingress_open_to_world(protocol, port) if {
-  resource_after("aws_security_group", after)
-  rule := after.ingress[_]
-  rule.protocol == protocol
-  rule.from_port <= port
-  rule.to_port >= port
-  rule.cidr_blocks[_] == "0.0.0.0/0"
-}
-
-vpc_exists if {
-  resource_exists("aws_vpc")
-}
-
-private_subnet_no_public_ip_mapping if {
-  resource_after("aws_subnet", after)
-  after.map_public_ip_on_launch == false
-}
-
-vpc_flow_logs_enabled if {
-  resource_exists("aws_flow_log")
-}
-
-restricted_egress_only_https if {
-  resource_after("aws_security_group", after)
-  rule := after.egress[_]
-  rule.from_port == 443
-  rule.to_port == 443
-  rule.protocol == "tcp"
-}
-
-# Monitoring, detection and audit
 cloudtrail_enabled if {
-  resource_exists("aws_cloudtrail")
+	resource_exists("aws_cloudtrail")
 }
 
 cloudtrail_multi_region_enabled if {
-  resource_after("aws_cloudtrail", after)
-  after.is_multi_region_trail == true
+	active_resource(resource)
+	resource.type == "aws_cloudtrail"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "is_multi_region_trail", false) == true
 }
 
 cloudtrail_log_validation_enabled if {
-  resource_after("aws_cloudtrail", after)
-  after.enable_log_file_validation == true
-}
+	active_resource(resource)
+	resource.type == "aws_cloudtrail"
+	after_value := resource_after(resource)
 
-cloudtrail_management_events_enabled if {
-  resource_after("aws_cloudtrail", after)
-  after.event_selector[0].include_management_events == true
+	object.get(after_value, "enable_log_file_validation", false) == true
 }
 
 guardduty_enabled if {
-  resource_after("aws_guardduty_detector", after)
-  after.enable == true
+	active_resource(resource)
+	resource.type == "aws_guardduty_detector"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "enable", true) == true
 }
 
-cloudwatch_log_group_exists if {
-  resource_exists("aws_cloudwatch_log_group")
+vpc_flow_logs_enabled if {
+	resource_exists("aws_flow_log")
 }
 
 cloudwatch_log_retention_90_days if {
-  resource_after("aws_cloudwatch_log_group", after)
-  after.retention_in_days >= 90
+	active_resource(resource)
+	resource.type == "aws_cloudwatch_log_group"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "retention_in_days", 0) >= 90
 }
 
 cloudwatch_logs_encrypted if {
-  resource_after("aws_cloudwatch_log_group", after)
-  after.kms_key_id != ""
+	active_resource(resource)
+	resource.type == "aws_cloudwatch_log_group"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "kms_key_id", "") != ""
 }
 
-# Resilience and recovery
+# --------------------------------------------------------------------
+# Backup Controls
+# --------------------------------------------------------------------
+
 backup_plan_exists if {
-  resource_exists("aws_backup_plan")
-}
-
-backup_vault_exists if {
-  resource_exists("aws_backup_vault")
+	resource_exists("aws_backup_plan")
 }
 
 backup_vault_encrypted if {
-  resource_after("aws_backup_vault", after)
-  after.kms_key_arn != ""
+	active_resource(resource)
+	resource.type == "aws_backup_vault"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "kms_key_arn", "") != ""
 }
 
-# Compute hardening
+# --------------------------------------------------------------------
+# EC2 Controls
+# --------------------------------------------------------------------
+
+ec2_no_public_ip if {
+	not ec2_public_ip_detected
+}
+
+ec2_public_ip_detected if {
+	active_resource(resource)
+	resource.type == "aws_instance"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "associate_public_ip_address", false) == true
+}
+
 ec2_imdsv2_required if {
-  resource_after("aws_instance", after)
-  after.metadata_options[0].http_tokens == "required"
+	active_resource(resource)
+	resource.type == "aws_instance"
+	after_value := resource_after(resource)
+
+	metadata_options := object.get(after_value, "metadata_options", [])
+	metadata_options[_].http_tokens == "required"
 }
 
 ec2_ebs_encrypted if {
-  resource_after("aws_instance", after)
-  after.root_block_device[0].encrypted == true
+	active_resource(resource)
+	resource.type == "aws_instance"
+	after_value := resource_after(resource)
+
+	root_block_device := object.get(after_value, "root_block_device", [])
+	root_block_device[_].encrypted == true
 }
 
-ec2_detailed_monitoring_enabled if {
-  resource_after("aws_instance", after)
-  after.monitoring == true
+# --------------------------------------------------------------------
+# Network Controls
+# --------------------------------------------------------------------
+
+security_group_no_ssh_world if {
+	not sg_ingress_open_to_world("tcp", 22)
 }
 
-# Governance and tagging
+security_group_no_rdp_world if {
+	not sg_ingress_open_to_world("tcp", 3389)
+}
+
+sg_ingress_open_to_world(protocol_name, port_number) if {
+	active_resource(resource)
+	resource.type == "aws_security_group"
+	after_value := resource_after(resource)
+
+	ingress_rules := object.get(after_value, "ingress", [])
+	rule := ingress_rules[_]
+
+	object.get(rule, "protocol", "") == protocol_name
+	object.get(rule, "from_port", 0) <= port_number
+	object.get(rule, "to_port", 0) >= port_number
+
+	cidrs := object.get(rule, "cidr_blocks", [])
+	cidrs[_] == "0.0.0.0/0"
+}
+
+private_subnet_no_public_ip_mapping if {
+	not subnet_public_ip_mapping_detected
+}
+
+subnet_public_ip_mapping_detected if {
+	active_resource(resource)
+	resource.type == "aws_subnet"
+	after_value := resource_after(resource)
+
+	object.get(after_value, "map_public_ip_on_launch", false) == true
+}
+
+restricted_egress_only_https if {
+	not unrestricted_non_https_egress_detected
+}
+
+unrestricted_non_https_egress_detected if {
+	active_resource(resource)
+	resource.type == "aws_security_group"
+	after_value := resource_after(resource)
+
+	egress_rules := object.get(after_value, "egress", [])
+	rule := egress_rules[_]
+
+	cidrs := object.get(rule, "cidr_blocks", [])
+	cidrs[_] == "0.0.0.0/0"
+
+	not https_only_egress(rule)
+}
+
+https_only_egress(rule) if {
+	object.get(rule, "protocol", "") == "tcp"
+	object.get(rule, "from_port", 0) == 443
+	object.get(rule, "to_port", 0) == 443
+}
+
+# --------------------------------------------------------------------
+# Tagging / Governance Controls
+# --------------------------------------------------------------------
+
 required_tags_present if {
-  resource_has_tag("aws_instance", "Environment")
-  resource_has_tag("aws_instance", "Owner")
-  resource_has_tag("aws_instance", "Project")
-  resource_has_tag("aws_s3_bucket", "Environment")
-  resource_has_tag("aws_s3_bucket", "Owner")
-  resource_has_tag("aws_s3_bucket", "Project")
+	environment_tag_present
+	owner_tag_present
+	project_tag_present
 }
 
 environment_tag_present if {
-  resource_has_tag("aws_instance", "Environment")
+	resource_has_tag("aws_instance", "Environment")
 }
 
 owner_tag_present if {
-  resource_has_tag("aws_instance", "Owner")
+	resource_has_tag("aws_instance", "Owner")
 }
 
 project_tag_present if {
-  resource_has_tag("aws_instance", "Project")
+	resource_has_tag("aws_instance", "Project")
 }
 
 managed_by_terraform_tag_present if {
-  resource_has_tag("aws_instance", "ManagedBy")
+	resource_has_tag("aws_instance", "ManagedBy")
 }
