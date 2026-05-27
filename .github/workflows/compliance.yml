@@ -171,8 +171,8 @@ jobs:
 
           echo "TST=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
       
-          aws s3 cp reports/results.json \
-            s3://$ADMIN_BUCKET_NAME/cloud-compliance/results-$TST.json
+          aws s3 cp reports/results-*.json \
+            s3://$ADMIN_BUCKET_NAME/cloud-compliance/
       
           aws s3 cp reports/compliance-report.html \
             s3://$ADMIN_BUCKET_NAME/cloud-compliance/compliance-report-$TST.html
