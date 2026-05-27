@@ -70,6 +70,10 @@ jobs:
           terraform plan -refresh=false -out=tfplan
           terraform show -json tfplan > ../tfplan.json
 
+      - name: Validate Rego syntax
+        run: |
+          opa check policy/compliance.rego
+
       - name: Run GDPR checks
         if: ${{ env.FRAMEWORK == 'ALL' || contains(env.FRAMEWORK, 'GDPR') }}
         continue-on-error: true
