@@ -1,231 +1,395 @@
-# Cloud Compliance Pipeline for AWS Terraform
+# Cloud Compliance Pipeline
 
-This repository is a portfolio-ready **Compliance-as-Code** project for AWS infrastructure defined with Terraform.
+## Overview
 
-The pipeline evaluates a Terraform plan against multiple cybersecurity and regulatory frameworks using a single reusable OPA/Rego policy engine and a framework-to-control mapping file.
+This project is a practical **Cloud Compliance & Security Automation Pipeline** focused on demonstrating modern:
 
-## Supported frameworks
+* Compliance-as-Code
+* Policy-as-Code
+* Cloud Governance
+* Continuous Compliance
+* DevSecOps
 
-- GDPR
-- NIST CSF
-- CIS Controls
-- ISO 27001
-- PCI DSS
-- SOC 2
-- MITRE ATT&CK
-- LGPD
-- BACEN
-- Open Finance
+The solution analyzes Terraform execution plans (`tfplan.json`) for AWS environments and evaluates them against multiple international and Brazilian security and compliance frameworks using **OPA/Rego**.
 
-Each framework has **30 controls**:
+The pipeline was designed as a portfolio project to demonstrate real-world Cloud Security Engineering and GRC automation practices.
 
-- 10 HIGH controls, worth 5 points each
-- 10 MEDIUM controls, worth 3 points each
-- 10 LOW controls, worth 1 point each
+---
 
-Total per framework: **90 points**.
+# Main Features
 
-## Current portfolio scope
+## Compliance-as-Code
 
-This project is focused on **detecting compliance gaps in the Terraform plan**.
+Reusable security and governance controls implemented through centralized OPA/Rego policies.
 
-The workflow authenticates to AWS using **GitHub Actions OIDC** only to initialize Terraform and generate the plan. The pipeline does **not** run `terraform apply` and does **not** deploy infrastructure.
+---
 
-The Terraform state backend uses an S3 bucket provided at workflow runtime through the `TERRAFORM_STATE_BUCKET` input.
+## Policy-as-Code
 
-## Architecture
+Security requirements are codified and automatically validated during CI/CD execution.
+
+---
+
+## Multi-Framework Compliance Assessment
+
+Supports multiple frameworks and regulations simultaneously.
+
+### International Frameworks
+
+* GDPR
+* NIST CSF
+* CIS Controls
+* ISO 27001
+* PCI DSS
+* SOC 2
+* MITRE ATT&CK
+
+### Brazilian Regulations
+
+* LGPD
+* BACEN
+* Open Finance Brasil
+
+---
+
+# Architecture
 
 ```text
-GitHub Actions workflow_dispatch
-  ↓
-Single job: compliance_pipeline
-  ↓
-AWS authentication through OIDC using ARN_OIDC
-  ↓
-Terraform init using S3 backend bucket from TERRAFORM_STATE_BUCKET
-  ↓
-Terraform validate
-  ↓
-Terraform plan generated in the runner
-  ↓
-terraform show -json
-  ↓
-One step/task per framework
-  ↓
-OPA/Rego compliance evaluation
-  ↓
-One consolidated HTML report for all selected frameworks
-  ↓
-Plan files removed from the runner
+Terraform IaC
+      ↓
+terraform plan -> tfplan.json
+      ↓
+OPA/Rego Evaluation
+      ↓
+Framework Mapping
+      ↓
+JSON Evidence & HTML Compliance Report
+      ↓
+S3 Administrative Bucket
 ```
 
-## Why the plan is generated in the runner
+---
 
-The Terraform plan JSON may contain sensitive infrastructure details. For this reason, this project does **not** require the user to commit, upload, or store `tfplan.json` in GitHub Secrets.
+# Main Capabilities
 
-The file is generated temporarily during the pipeline execution and removed before the job finishes.
+## Terraform Security Analysis
 
-## Required GitHub Actions inputs
+The pipeline evaluates Terraform plans before deployment.
 
-When running the workflow manually, provide:
+Examples:
 
-| Input | Description | Example |
-|---|---|---|
-| `FRAMEWORK` | Framework to execute. Use `ALL` for all frameworks. | `ALL` |
-| `AWS_REGION` | AWS region used by Terraform. | `us-east-1` |
-| `TERRAFORM_STATE_BUCKET` | S3 bucket name used to store the Terraform state file. | `my-terraform-state-bucket` |
-| `ARN_OIDC` | AWS IAM Role ARN assumed by GitHub Actions through OIDC. | `arn:aws:iam::123456789012:role/github-actions-oidc-role` |
+* Public exposure detection
+* IAM privilege escalation
+* Missing encryption
+* Missing CloudTrail
+* Public Security Groups
+* Missing VPC Flow Logs
+* Missing GuardDuty
+* Missing KMS rotation
+* Missing backup plans
+* Missing IMDSv2
 
-Examples for `FRAMEWORK`:
+---
+
+## DRY Architecture
+
+The project uses centralized reusable control definitions.
+
+### Technical Controls
 
 ```text
-ALL
-LGPD
-ISO27001
-LGPD,ISO27001,NIST_CSF
-OPEN_FINANCE,BACEN
+policy/controls.yaml
 ```
 
-## Workflow behavior
+Contains:
 
-The workflow uses a **single job** with one independent task/step per framework:
+* Technical controls
+* Control metadata
+* OPA check mapping
 
-- `GDPR`
-- `NIST_CSF`
-- `CIS`
-- `ISO27001`
-- `PCI_DSS`
-- `SOC2`
-- `MITRE`
-- `LGPD`
-- `BACEN`
-- `OPEN_FINANCE`
+---
 
-Terraform, Python, OPA and the Terraform plan are prepared only once. Each framework step reads the same `tfplan.json`.
-
-If a compliance control fails, the workflow **does not stop**. The failed control is recorded in the JSON and HTML reports as `FAIL`.
-
-This separates pipeline execution errors from compliance findings:
-
-- Syntax/runtime error: pipeline failure
-- Compliance gap: pipeline succeeds and report shows `FAIL`
-
-## Consolidated report
-
-The workflow generates a single final HTML report:
+### Framework Mapping
 
 ```text
-reports/cloud-compliance-report.html
+policy/frameworks.yaml
 ```
 
-The report includes:
+Contains:
 
-- selected frameworks;
-- total score;
-- score by framework;
-- detailed result per control;
-- related frameworks;
-- PASS/FAIL status for each item.
+* Framework domains
+* Severity
+* Scoring
+* Regulatory requirements
+* Control association
 
-## Project structure
+---
+
+### Rego Policies
 
 ```text
-cloud-compliance-pipeline/
-├── .github/workflows/compliance.yml
-├── terraform/
-│   ├── providers.tf
-│   ├── variables.tf
-│   ├── main.tf
-│   ├── network.tf
-│   ├── iam.tf
-│   ├── s3.tf
-│   ├── compute.tf
-│   └── security_services.tf
+policy/compliance.rego
+```
+
+Contains:
+
+* Terraform resource evaluation logic
+* OPA policies
+* AWS security validations
+
+---
+
+# Heterogeneous Framework Modeling
+
+Each framework has:
+
+* Independent domains
+* Different controls
+* Different severities
+* Different requirements
+* Independent scoring
+
+---
+
+# Severity Model
+
+| Severity | Score |
+| -------- | ----- |
+| HIGH     | 5     |
+| MEDIUM   | 3     |
+| LOW      | 1     |
+
+---
+
+# HTML Reporting
+
+The pipeline generates a centralized HTML report containing:
+
+* Framework
+* Domain
+* Requirement
+* Technical control
+* Severity
+* Status
+* Compliance score
+
+---
+
+# Repository Structure
+
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── compliance.yml
+│
 ├── policy/
 │   ├── compliance.rego
-│   └── controls.yaml
+│   ├── controls.yaml
+│   └── frameworks.yaml
+│
 ├── scripts/
 │   ├── evaluate.py
 │   ├── merge_results.py
 │   └── render_html.py
-├── reports/
-│   └── .gitkeep
-├── requirements.txt
-├── .gitignore
-└── README.md
+│
+├── terraform/
 ```
 
-## Local execution
+---
 
-For local testing without remote backend:
+# Technologies Used
 
-```bash
-cd terraform
-terraform init -backend=false
-terraform validate
-terraform plan -refresh=false -out=tfplan
-terraform show -json tfplan > ../tfplan.json
-cd ..
-python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --framework ALL --output reports/results.json
-python3 scripts/render_html.py --input reports/results.json --output reports/cloud-compliance-report.html
-rm -f terraform/tfplan tfplan.json
-```
+| Technology     | Purpose                |
+| -------------- | ---------------------- |
+| Terraform      | Infrastructure as Code |
+| AWS            | Cloud Platform         |
+| OPA/Rego       | Policy Engine          |
+| GitHub Actions | CI/CD                  |
+| Python         | Report Processing      |
+| HTML           | Audit Reporting        |
+| S3             | Evidence Storage       |
 
-## Portfolio positioning
+---
 
-This project demonstrates:
+# Workflow Execution
 
-- Cloud Security
-- GRC Engineering
-- DevSecOps
-- Compliance-as-Code
-- Policy-as-Code
-- Terraform plan analysis
-- OPA/Rego
-- AWS security controls
-- GitHub Actions OIDC
-- Secure Terraform plan handling
-- Multi-framework control mapping
+## 1. Framework Selection
 
-Suggested LinkedIn/GitHub description:
-
-> Compliance-as-Code pipeline for AWS Terraform plans using OPA/Rego, GitHub Actions OIDC, and multi-framework control mapping across GDPR, LGPD, NIST CSF, CIS Controls, ISO 27001, PCI DSS, SOC 2, MITRE ATT&CK, BACEN, and Open Finance.
-
-
-## Policy data model
-
-The project separates the technical control catalog from framework mappings:
+The workflow supports:
 
 ```text
-policy/
-├── controls.yaml      # Reusable technical controls and the OPA/Rego check name
-├── frameworks.yaml    # Framework-specific items mapped to technical controls
-└── compliance.rego    # Single DRY Rego policy package
+ALL
 ```
 
-`controls.yaml` defines one technical control only once. `frameworks.yaml` maps each framework item to a reusable control ID. The HTML report uses this relationship to show which frameworks are related to the same technical control.
+Or specific frameworks:
 
-Example:
-
-```yaml
-# controls.yaml
-controls:
-  S3_ENCRYPTED:
-    title: S3 Encrypted
-    check: s3_encrypted
-
-# frameworks.yaml
-frameworks:
-  LGPD:
-    - id: LGPD-H01
-      control: S3_ENCRYPTED
-      severity: HIGH
-      score: 5
-  GDPR:
-    - id: GDPR-H01
-      control: S3_ENCRYPTED
-      severity: HIGH
-      score: 5
+```text
+GDPR,NIST_CSF,PCI_DSS
 ```
 
-The consolidated HTML report then lists `S3_ENCRYPTED` as one technical control related to both LGPD and GDPR.
+Using GitHub Actions manual inputs.
+
+---
+
+## 2. Terraform Plan Generation
+
+The workflow generates the Terraform execution plan:
+
+```bash
+terraform init
+terraform plan
+terraform show -json tfplan > tfplan.json
+```
+
+---
+
+## 3. OPA/Rego Evaluation
+
+OPA evaluates the Terraform plan against all technical controls.
+
+---
+
+## 4. Framework
+
+Each framework is evaluated independently.
+
+Benefits:
+
+* Parallel execution
+* Better scalability
+* Easier debugging
+* Independent scoring
+* More realistic audit behavior
+
+---
+
+## 5. JSON Evidence Generation
+
+Each framework generates its own evidence file:
+
+```text
+reports/results-gdpr.json
+reports/results-pci-dss.json
+reports/results-lgpd.json
+```
+
+---
+
+## 6. Result Consolidation
+
+All framework results are merged into:
+
+```text
+reports/results.json
+```
+
+---
+
+## 7. HTML Report Generation
+
+The consolidated report is transformed into:
+
+```text
+reports/compliance-report.html
+```
+
+---
+
+## 8. Administrative Evidence Upload
+
+Final evidence files are uploaded to an administrative S3 bucket.
+
+Uploaded files:
+
+```text
+results.json
+compliance-report.html
+framework-results/
+```
+
+---
+
+# GitHub Actions Variables
+
+Configure these variables in:
+
+```text
+Settings → Secrets and variables → Actions
+```
+
+| Variable              | Description              |
+| --------------------- | ------------------------ |
+| AWS_REGION            | AWS region               |
+| TERRAFORM_BUCKET_NAME | Terraform backend bucket |
+| ARN_OIDC_TERRAFORM    | AWS OIDC role            |
+| ADMIN_BUCKET_NAME     | Administrative S3 bucket |
+
+---
+
+# Security Practices
+
+## OIDC Federation
+
+The workflow uses AWS OIDC federation to avoid long-lived credentials.
+
+---
+
+## Secure Terraform Backend
+
+Terraform state is stored securely in S3.
+
+---
+
+## Shift Left Security
+
+Compliance validation happens before infrastructure deployment.
+
+---
+
+## Immutable Evidence Storage
+
+Audit evidence is uploaded to S3 for retention and traceability.
+
+---
+
+# Example Controls
+
+## HIGH Severity
+
+* Public SSH exposure
+* Public RDP exposure
+* IAM admin policy detection
+* Missing encryption
+* Public subnet exposure
+
+---
+
+## MEDIUM Severity
+
+* Missing VPC Flow Logs
+* Missing CloudTrail multi-region
+* Missing backup plan
+* Missing GuardDuty
+
+---
+
+## LOW Severity
+
+* Missing governance tags
+* Missing confidentiality tags
+* Missing retention configuration
+
+---
+
+
+# Future Improvements
+
+* Multi-cloud support
+* Kubernetes/K8s controls
+* CIS Benchmark integration
+* Security exception workflows
+* Dashboard visualization
+* Compliance APIs
+* Real-time notifications
+* Compliance-as-Code
