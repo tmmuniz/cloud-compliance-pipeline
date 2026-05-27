@@ -2,7 +2,7 @@
 
 This repository is a portfolio-ready **Compliance-as-Code** project for AWS infrastructure defined with Terraform.
 
-The pipeline evaluates a Terraform plan against multiple cybersecurity and regulatory frameworks using a single reusable OPA/Rego policy engine.
+The pipeline evaluates a Terraform plan against multiple cybersecurity and regulatory frameworks using a single reusable OPA/Rego policy engine and a framework-to-control mapping file.
 
 ## Supported frameworks
 
@@ -29,26 +29,32 @@ Total per framework: **90 points**.
 
 This project is focused on **detecting compliance gaps in the Terraform plan**.
 
-It does **not** deploy infrastructure, does **not** require AWS credentials, and does **not** use a remote Terraform state bucket.
+The workflow authenticates to AWS using **GitHub Actions OIDC** only to initialize Terraform and generate the plan. The pipeline does **not** run `terraform apply` and does **not** deploy infrastructure.
 
-The AWS provider is configured in demo mode with mock credentials and validation skips so GitHub Actions can generate a local plan and audit it safely.
+The Terraform state backend uses an S3 bucket provided at workflow runtime through the `TERRAFORM_STATE_BUCKET` input.
 
 ## Architecture
 
 ```text
 GitHub Actions workflow_dispatch
   ↓
-One independent job per framework
+Single job: compliance_pipeline
   ↓
-Terraform init without backend
+AWS authentication through OIDC using ARN_OIDC
   ↓
-Terraform plan generated locally with -refresh=false
+Terraform init using S3 backend bucket from TERRAFORM_STATE_BUCKET
+  ↓
+Terraform validate
+  ↓
+Terraform plan generated in the runner
   ↓
 terraform show -json
   ↓
+One step/task per framework
+  ↓
 OPA/Rego compliance evaluation
   ↓
-HTML compliance report per framework
+One consolidated HTML report for all selected frameworks
   ↓
 Plan files removed from the runner
 ```
@@ -66,7 +72,9 @@ When running the workflow manually, provide:
 | Input | Description | Example |
 |---|---|---|
 | `FRAMEWORK` | Framework to execute. Use `ALL` for all frameworks. | `ALL` |
-| `AWS_REGION` | AWS region used only to render the local Terraform plan. | `us-east-1` |
+| `AWS_REGION` | AWS region used by Terraform. | `us-east-1` |
+| `TERRAFORM_STATE_BUCKET` | S3 bucket name used to store the Terraform state file. | `my-terraform-state-bucket` |
+| `ARN_OIDC` | AWS IAM Role ARN assumed by GitHub Actions through OIDC. | `arn:aws:iam::123456789012:role/github-actions-oidc-role` |
 
 Examples for `FRAMEWORK`:
 
@@ -80,7 +88,7 @@ OPEN_FINANCE,BACEN
 
 ## Workflow behavior
 
-The workflow has one job per framework:
+The workflow uses a **single job** with one independent task/step per framework:
 
 - `GDPR`
 - `NIST_CSF`
@@ -93,12 +101,31 @@ The workflow has one job per framework:
 - `BACEN`
 - `OPEN_FINANCE`
 
-If a compliance control fails, the pipeline **does not stop**. The failed control is recorded in the JSON and HTML reports as `FAIL`.
+Terraform, Python, OPA and the Terraform plan are prepared only once. Each framework step reads the same `tfplan.json`.
+
+If a compliance control fails, the workflow **does not stop**. The failed control is recorded in the JSON and HTML reports as `FAIL`.
 
 This separates pipeline execution errors from compliance findings:
 
 - Syntax/runtime error: pipeline failure
 - Compliance gap: pipeline succeeds and report shows `FAIL`
+
+## Consolidated report
+
+The workflow generates a single final HTML report:
+
+```text
+reports/cloud-compliance-report.html
+```
+
+The report includes:
+
+- selected frameworks;
+- total score;
+- score by framework;
+- detailed result per control;
+- related frameworks;
+- PASS/FAIL status for each item.
 
 ## Project structure
 
@@ -119,6 +146,7 @@ cloud-compliance-pipeline/
 │   └── controls.yaml
 ├── scripts/
 │   ├── evaluate.py
+│   ├── merge_results.py
 │   └── render_html.py
 ├── reports/
 │   └── .gitkeep
@@ -129,6 +157,8 @@ cloud-compliance-pipeline/
 
 ## Local execution
 
+For local testing without remote backend:
+
 ```bash
 cd terraform
 terraform init -backend=false
@@ -136,8 +166,9 @@ terraform validate
 terraform plan -refresh=false -out=tfplan
 terraform show -json tfplan > ../tfplan.json
 cd ..
-python3 scripts/evaluate.py   --plan tfplan.json   --controls policy/controls.yaml   --framework ALL   --output reports/results.json
-python3 scripts/render_html.py   --input reports/results.json   --output reports/compliance-report.html
+python3 scripts/evaluate.py --plan tfplan.json --controls policy/controls.yaml --framework ALL --output reports/results.json
+python3 scripts/render_html.py --input reports/results.json --output reports/cloud-compliance-report.html
+rm -f terraform/tfplan tfplan.json
 ```
 
 ## Portfolio positioning
@@ -152,9 +183,10 @@ This project demonstrates:
 - Terraform plan analysis
 - OPA/Rego
 - AWS security controls
-- GitHub Actions automation
+- GitHub Actions OIDC
+- Secure Terraform plan handling
 - Multi-framework control mapping
 
 Suggested LinkedIn/GitHub description:
 
-> Compliance-as-Code pipeline for AWS Terraform plans using OPA/Rego, GitHub Actions, and multi-framework control mapping across GDPR, LGPD, NIST CSF, CIS Controls, ISO 27001, PCI DSS, SOC 2, MITRE ATT&CK, BACEN, and Open Finance.
+> Compliance-as-Code pipeline for AWS Terraform plans using OPA/Rego, GitHub Actions OIDC, and multi-framework control mapping across GDPR, LGPD, NIST CSF, CIS Controls, ISO 27001, PCI DSS, SOC 2, MITRE ATT&CK, BACEN, and Open Finance.

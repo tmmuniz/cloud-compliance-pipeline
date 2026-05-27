@@ -7,19 +7,17 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  # Backend configuration is intentionally partial.
+  # GitHub Actions injects the bucket name at runtime through TERRAFORM_STATE_BUCKET.
+  backend "s3" {
+    key     = "cloud-compliance-pipeline/terraform.tfstate"
+    encrypt = true
+  }
 }
 
 provider "aws" {
   region = var.AWS_REGION
-
-  # Portfolio/demo mode: the pipeline only generates and audits the Terraform plan.
-  # No infrastructure is deployed and no AWS authentication is required.
-  access_key                  = "mock_access_key"
-  secret_key                  = "mock_secret_key"
-  skip_credentials_validation = true
-  skip_requesting_account_id  = true
-  skip_metadata_api_check     = true
-  skip_region_validation      = true
 
   default_tags {
     tags = {
