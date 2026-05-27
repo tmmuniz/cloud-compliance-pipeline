@@ -5,6 +5,39 @@ from collections import defaultdict
 from pathlib import Path
 
 
+def default_summary() -> dict:
+    return {
+        "achieved_score": 0,
+        "total_score": 0,
+        "total_controls": 0,
+        "passed": 0,
+        "failed": 0,
+        "opa_error": 0,
+        "undefined": 0,
+    }
+
+
+def update_summary(summary: dict, score: int, status: str) -> None:
+    summary["total_score"] += score
+    summary["total_controls"] += 1
+
+    if status == "PASS":
+        summary["achieved_score"] += score
+        summary["passed"] += 1
+    elif status == "OPA_ERROR":
+        summary["opa_error"] += 1
+    elif status == "UNDEFINED":
+        summary["undefined"] += 1
+    else:
+        summary["failed"] += 1
+
+
+def finalize_summary(summary: dict) -> dict:
+    summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
+    summary["non_passed"] = summary["failed"] + summary["opa_error"] + summary["undefined"]
+    return summary
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge individual framework JSON results into one consolidated result file.")
     parser.add_argument("--input-dir", required=True, help="Directory containing results-*.json files.")
@@ -12,15 +45,16 @@ def main() -> None:
     args = parser.parse_args()
 
     input_dir = Path(args.input_dir)
+    output_name = Path(args.output).name
     result_files = sorted(
         path for path in input_dir.glob("results-*.json")
-        if path.name != Path(args.output).name and path.name != "results-all-frameworks.json"
+        if path.name not in {output_name, "results-all-frameworks.json"}
     )
 
     all_results = []
     selected_frameworks = []
-    framework_summary = defaultdict(lambda: {"achieved_score": 0, "total_score": 0, "passed": 0, "failed": 0})
-    severity_summary = defaultdict(lambda: {"achieved_score": 0, "total_score": 0, "passed": 0, "failed": 0})
+    framework_summary = defaultdict(default_summary)
+    severity_summary = defaultdict(default_summary)
     achieved_score = 0
     total_score = 0
 
@@ -37,27 +71,14 @@ def main() -> None:
             severity = item["severity"]
             framework = item["framework"]
             score = int(item["score"])
-            passed = item["status"] == "PASS"
+            status = item.get("status", "PASS" if item.get("passed") else "FAIL")
 
             total_score += score
-            framework_summary[framework]["total_score"] += score
-            severity_summary[severity]["total_score"] += score
+            update_summary(framework_summary[framework], score, status)
+            update_summary(severity_summary[severity], score, status)
 
-            if passed:
+            if status == "PASS":
                 achieved_score += score
-                framework_summary[framework]["achieved_score"] += score
-                framework_summary[framework]["passed"] += 1
-                severity_summary[severity]["achieved_score"] += score
-                severity_summary[severity]["passed"] += 1
-            else:
-                framework_summary[framework]["failed"] += 1
-                severity_summary[severity]["failed"] += 1
-
-    for summary in framework_summary.values():
-        summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
-
-    for summary in severity_summary.values():
-        summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
 
     output = {
         "selected_frameworks": sorted(selected_frameworks),
@@ -65,8 +86,8 @@ def main() -> None:
         "achieved_score": achieved_score,
         "total_score": total_score,
         "final_score_percent": round((achieved_score / total_score) * 100, 2) if total_score else 0,
-        "framework_summary": dict(sorted(framework_summary.items())),
-        "severity_summary": dict(sorted(severity_summary.items())),
+        "framework_summary": {key: finalize_summary(value) for key, value in sorted(framework_summary.items())},
+        "severity_summary": {key: finalize_summary(value) for key, value in sorted(severity_summary.items())},
         "results": sorted(all_results, key=lambda item: (item["framework"], item["id"])),
     }
 

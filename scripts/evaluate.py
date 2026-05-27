@@ -5,6 +5,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -27,6 +28,8 @@ POINTS = {
     "LOW": 1,
 }
 
+NON_COMPLIANT_STATUSES = {"FAIL", "UNDEFINED", "OPA_ERROR"}
+
 
 def normalize_frameworks(raw_framework: str) -> list[str]:
     selected = [item.strip().upper() for item in raw_framework.split(",") if item.strip()]
@@ -44,7 +47,15 @@ def normalize_frameworks(raw_framework: str) -> list[str]:
     return selected
 
 
-def run_opa(plan_path: str, check: str) -> bool:
+def run_opa(plan_path: str, check: str) -> dict[str, Any]:
+    """Run a single OPA/Rego check and return a structured result.
+
+    PASS means the Rego rule explicitly evaluated to true.
+    FAIL means the rule was evaluated but did not return true, usually because the
+    Terraform plan does not satisfy the control.
+    OPA_ERROR means OPA could not parse/evaluate the policy or input.
+    UNDEFINED means OPA returned a value, but it was not a boolean.
+    """
     command = [
         "opa",
         "eval",
@@ -60,14 +71,69 @@ def run_opa(plan_path: str, check: str) -> bool:
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
 
     if completed.returncode != 0:
-        print(f"OPA evaluation failed for check '{check}': {completed.stderr}", file=sys.stderr)
-        return False
+        message = completed.stderr.strip() or completed.stdout.strip() or "OPA evaluation failed without output."
+        print(f"OPA evaluation error for check '{check}': {message}", file=sys.stderr)
+        return {
+            "status": "OPA_ERROR",
+            "passed": False,
+            "message": message,
+            "opa_returncode": completed.returncode,
+        }
 
     try:
         data = json.loads(completed.stdout)
-        return data["result"][0]["expressions"][0]["value"] is True
-    except (KeyError, IndexError, TypeError, json.JSONDecodeError):
-        return False
+    except json.JSONDecodeError as exc:
+        return {
+            "status": "OPA_ERROR",
+            "passed": False,
+            "message": f"Invalid JSON returned by OPA: {exc}",
+            "opa_returncode": completed.returncode,
+        }
+
+    result = data.get("result", [])
+
+    # For boolean-style Rego rules, an empty result means the rule was undefined.
+    # In a compliance context this means the control did not pass, not that OPA failed.
+    if not result:
+        return {
+            "status": "FAIL",
+            "passed": False,
+            "message": "Rule did not evaluate to true for this Terraform plan.",
+            "opa_returncode": completed.returncode,
+        }
+
+    try:
+        value = result[0]["expressions"][0]["value"]
+    except (KeyError, IndexError, TypeError):
+        return {
+            "status": "UNDEFINED",
+            "passed": False,
+            "message": "OPA result did not include a boolean expression value.",
+            "opa_returncode": completed.returncode,
+        }
+
+    if value is True:
+        return {
+            "status": "PASS",
+            "passed": True,
+            "message": "Rule evaluated to true.",
+            "opa_returncode": completed.returncode,
+        }
+
+    if value is False:
+        return {
+            "status": "FAIL",
+            "passed": False,
+            "message": "Rule evaluated to false.",
+            "opa_returncode": completed.returncode,
+        }
+
+    return {
+        "status": "UNDEFINED",
+        "passed": False,
+        "message": f"OPA returned a non-boolean value: {value!r}",
+        "opa_returncode": completed.returncode,
+    }
 
 
 def build_related_frameworks(frameworks_map: dict) -> dict[str, list[str]]:
@@ -76,6 +142,44 @@ def build_related_frameworks(frameworks_map: dict) -> dict[str, list[str]]:
         for item in items:
             related[item["control"]].add(framework)
     return {control: sorted(frameworks) for control, frameworks in related.items()}
+
+
+def update_summary(summary: dict, severity: str, score: int, status: str) -> None:
+    summary["total_score"] += score
+    summary["total_controls"] += 1
+
+    if status == "PASS":
+        summary["achieved_score"] += score
+        summary["passed"] += 1
+    elif status == "OPA_ERROR":
+        summary["opa_error"] += 1
+    elif status == "UNDEFINED":
+        summary["undefined"] += 1
+    else:
+        summary["failed"] += 1
+
+    summary["by_severity"][severity]["total"] += 1
+    summary["by_severity"][severity][status.lower()] += 1
+
+
+def default_summary() -> dict:
+    return {
+        "achieved_score": 0,
+        "total_score": 0,
+        "total_controls": 0,
+        "passed": 0,
+        "failed": 0,
+        "opa_error": 0,
+        "undefined": 0,
+        "by_severity": defaultdict(lambda: {"total": 0, "pass": 0, "fail": 0, "opa_error": 0, "undefined": 0}),
+    }
+
+
+def finalize_summary(summary: dict) -> dict:
+    summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
+    summary["non_passed"] = summary["failed"] + summary["opa_error"] + summary["undefined"]
+    summary["by_severity"] = {key: dict(value) for key, value in sorted(summary["by_severity"].items())}
+    return summary
 
 
 def main() -> None:
@@ -101,8 +205,8 @@ def main() -> None:
     related_by_control = build_related_frameworks(frameworks_map)
 
     results = []
-    framework_summary = defaultdict(lambda: {"achieved_score": 0, "total_score": 0, "passed": 0, "failed": 0})
-    severity_summary = defaultdict(lambda: {"achieved_score": 0, "total_score": 0, "passed": 0, "failed": 0})
+    framework_summary = defaultdict(default_summary)
+    severity_summary = defaultdict(default_summary)
 
     total_score = 0
     achieved_score = 0
@@ -110,24 +214,22 @@ def main() -> None:
     for framework in selected_frameworks:
         for item in frameworks_map.get(framework, []):
             control_id = item["control"]
+            if control_id not in controls_catalog:
+                raise KeyError(f"Control '{control_id}' mapped in frameworks.yaml was not found in controls.yaml.")
+
             control = controls_catalog[control_id]
             severity = item["severity"].upper()
             score = int(item.get("score", POINTS[severity]))
-            passed = run_opa(args.plan, control["check"])
+            evaluation = run_opa(args.plan, control["check"])
+            status = evaluation["status"]
+            passed = evaluation["passed"]
 
             total_score += score
-            framework_summary[framework]["total_score"] += score
-            severity_summary[severity]["total_score"] += score
-
             if passed:
                 achieved_score += score
-                framework_summary[framework]["achieved_score"] += score
-                framework_summary[framework]["passed"] += 1
-                severity_summary[severity]["achieved_score"] += score
-                severity_summary[severity]["passed"] += 1
-            else:
-                framework_summary[framework]["failed"] += 1
-                severity_summary[severity]["failed"] += 1
+
+            update_summary(framework_summary[framework], severity, score, status)
+            update_summary(severity_summary[severity], severity, score, status)
 
             results.append({
                 "id": item["id"],
@@ -141,14 +243,9 @@ def main() -> None:
                 "description": control.get("description", ""),
                 "check": control["check"],
                 "passed": passed,
-                "status": "PASS" if passed else "FAIL",
+                "status": status,
+                "message": evaluation.get("message", ""),
             })
-
-    for summary in framework_summary.values():
-        summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
-
-    for summary in severity_summary.values():
-        summary["score_percent"] = round((summary["achieved_score"] / summary["total_score"]) * 100, 2) if summary["total_score"] else 0
 
     output = {
         "selected_frameworks": selected_frameworks,
@@ -156,9 +253,9 @@ def main() -> None:
         "achieved_score": achieved_score,
         "total_score": total_score,
         "final_score_percent": round((achieved_score / total_score) * 100, 2) if total_score else 0,
-        "framework_summary": dict(sorted(framework_summary.items())),
-        "severity_summary": dict(sorted(severity_summary.items())),
-        "results": sorted(results, key=lambda item: (item["framework"], item["id"])),
+        "framework_summary": {key: finalize_summary(value) for key, value in sorted(framework_summary.items())},
+        "severity_summary": {key: finalize_summary(value) for key, value in sorted(severity_summary.items())},
+        "results": results,
     }
 
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
