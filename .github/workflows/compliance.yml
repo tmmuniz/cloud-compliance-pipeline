@@ -57,7 +57,6 @@ jobs:
       - name: Terraform init using remote S3 state bucket
         working-directory: terraform
         run: |
-          run: 
           terraform init -input=false -reconfigure -backend-config="bucket=${{ vars.TERRAFORM_BUCKET_NAME }}" -backend-config="key=cloudcomp/terraform.tfstate" -backend-config="region=${{ vars.AWS_REGION }}" -backend-config="encrypt=true"
           
       - name: Terraform validate
