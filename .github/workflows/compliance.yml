@@ -159,18 +159,20 @@ jobs:
         run: |
           rm -f terraform/tfplan tfplan.json terraform/tfplan.json
 
-      - name: Upload consolidated HTML report
+      - name: Upload reports to administrative S3 bucket
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cloud-compliance-report
-          path: reports/cloud-compliance-report.html
-          if-no-files-found: error
+        env:
+          ADMIN_BUCKET_NAME: ${{ vars.ADMIN_BUCKET_NAME }}
+        run: |
+          if [ -z "$ADMIN_BUCKET_NAME" ]; then
+            echo "ADMIN_BUCKET_NAME is empty"
+            exit 1
+          fi
 
-      - name: Upload raw JSON results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cloud-compliance-json-results
-          path: reports/results-*.json
-          if-no-files-found: ignore
+          echo "TST=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+      
+          aws s3 cp reports/results.json \
+            s3://$ADMIN_BUCKET_NAME/cloud-compliance/results-$TST.json
+      
+          aws s3 cp reports/compliance-report.html \
+            s3://$ADMIN_BUCKET_NAME/cloud-compliance/compliance-report-$TST.html
