@@ -28,10 +28,10 @@ permissions:
 
 env:
   FRAMEWORK: ${{ github.event.inputs.FRAMEWORK }}
-  AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
-  TERRAFORM_STATE_BUCKET: ${{ github.event.inputs.TERRAFORM_STATE_BUCKET }}
-  ARN_OIDC: ${{ github.event.inputs.ARN_OIDC }}
-  TF_VAR_AWS_REGION: ${{ github.event.inputs.AWS_REGION }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  TERRAFORM_STATE_BUCKET: ${{ vars.TERRAFORM_STATE_BUCKET }}
+  ARN_OIDC_TERRAFORM: ${{ vars.ARN_OIDC_TERRAFORM }}
+  TF_VAR_AWS_REGION: ${{ vars.AWS_REGION }}
   TF_IN_AUTOMATION: "true"
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
       - name: Configure AWS credentials through OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.ARN_OIDC }}
+          role-to-assume: ${{ env.ARN_OIDC_TERRAFORM }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -70,10 +70,9 @@ jobs:
       - name: Terraform init using remote S3 state bucket
         working-directory: terraform
         run: |
-          terraform init \
-            -backend-config="bucket=${TERRAFORM_STATE_BUCKET}" \
-            -backend-config="region=${AWS_REGION}"
-
+          run: 
+          terraform init -input=false -reconfigure -backend-config="bucket=${{ vars.TERRAFORM_BUCKET_NAME }}" -backend-config="key=cloudcomp/terraform.tfstate" -backend-config="region=${{ vars.AWS_REGION }}" -backend-config="encrypt=true"
+          
       - name: Terraform validate
         working-directory: terraform
         run: terraform validate
