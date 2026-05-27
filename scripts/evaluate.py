@@ -234,6 +234,7 @@ def main() -> None:
             results.append({
                 "id": item["id"],
                 "framework": framework,
+                "domain": item.get("domain", "General"),
                 "control": control_id,
                 "related_frameworks": related_by_control.get(control_id, []),
                 "severity": severity,

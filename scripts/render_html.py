@@ -2,6 +2,7 @@
 import argparse
 import html
 import json
+from collections import defaultdict
 from pathlib import Path
 
 
@@ -41,6 +42,10 @@ def aggregate_status(statuses: list[str]) -> str:
     return "FAIL"
 
 
+def count_status(results: list[dict], status: str) -> int:
+    return sum(1 for item in results if item.get("status") == status)
+
+
 def grouped_controls(results: list[dict]) -> list[dict]:
     grouped = {}
     for item in results:
@@ -51,11 +56,15 @@ def grouped_controls(results: list[dict]) -> list[dict]:
                 "title": item["title"],
                 "check": item["check"],
                 "frameworks": set(),
+                "domains": set(),
                 "statuses": [],
                 "highest_severity": "LOW",
             }
+
         grouped[control_id]["frameworks"].add(item["framework"])
+        grouped[control_id]["domains"].add(f"{item['framework']}: {item.get('domain', 'General')}")
         grouped[control_id]["statuses"].append(item.get("status", "PASS" if item.get("passed") else "FAIL"))
+
         if item["severity"] == "HIGH":
             grouped[control_id]["highest_severity"] = "HIGH"
         elif item["severity"] == "MEDIUM" and grouped[control_id]["highest_severity"] != "HIGH":
@@ -64,14 +73,57 @@ def grouped_controls(results: list[dict]) -> list[dict]:
     rows = []
     for item in grouped.values():
         item["frameworks"] = sorted(item["frameworks"])
+        item["domains"] = sorted(item["domains"])
         item["status"] = aggregate_status(item["statuses"])
         item["usage_count"] = len(item["statuses"])
         rows.append(item)
+
     return sorted(rows, key=lambda item: (status_priority(item["status"]), item["control"]))
 
 
-def count_status(results: list[dict], status: str) -> int:
-    return sum(1 for item in results if item.get("status") == status)
+def domain_summary_rows(results: list[dict]) -> str:
+    domains = defaultdict(lambda: {
+        "passed": 0,
+        "failed": 0,
+        "opa_error": 0,
+        "undefined": 0,
+        "achieved_score": 0,
+        "total_score": 0,
+    })
+
+    for item in results:
+        key = (item["framework"], item.get("domain", "General"))
+        status = item.get("status", "FAIL")
+        score = int(item.get("score", 0))
+        domains[key]["total_score"] += score
+
+        if status == "PASS":
+            domains[key]["passed"] += 1
+            domains[key]["achieved_score"] += score
+        elif status == "OPA_ERROR":
+            domains[key]["opa_error"] += 1
+        elif status == "UNDEFINED":
+            domains[key]["undefined"] += 1
+        else:
+            domains[key]["failed"] += 1
+
+    rows = ""
+    for (framework, domain), summary in sorted(domains.items()):
+        percent = (summary["achieved_score"] / summary["total_score"] * 100) if summary["total_score"] else 0
+        rows += f"""
+        <tr>
+          <td>{html.escape(framework)}</td>
+          <td>{html.escape(domain)}</td>
+          <td>{summary['passed']}</td>
+          <td>{summary['failed']}</td>
+          <td>{summary['opa_error']}</td>
+          <td>{summary['undefined']}</td>
+          <td>{summary['achieved_score']}</td>
+          <td>{summary['total_score']}</td>
+          <td>{pct(percent)}</td>
+        </tr>
+        """
+    return rows
 
 
 def main() -> None:
@@ -106,11 +158,13 @@ def main() -> None:
     relationship_rows = ""
     for item in grouped_controls(data["results"]):
         frameworks = ", ".join(item["frameworks"])
+        domains = "; ".join(item["domains"])
         relationship_rows += f"""
         <tr>
           <td><code>{html.escape(item['control'])}</code></td>
           <td>{html.escape(item['title'])}</td>
           <td>{html.escape(frameworks)}</td>
+          <td>{html.escape(domains)}</td>
           <td>{item['usage_count']}</td>
           <td class="severity {html.escape(item['highest_severity'].lower())}">{html.escape(item['highest_severity'])}</td>
           <td><code>{html.escape(item['check'])}</code></td>
@@ -127,6 +181,7 @@ def main() -> None:
         <tr>
           <td>{html.escape(item['id'])}</td>
           <td>{html.escape(item['framework'])}</td>
+          <td>{html.escape(item.get('domain', 'General'))}</td>
           <td><code>{html.escape(item['control'])}</code></td>
           <td>{html.escape(related)}</td>
           <td class="severity {html.escape(item['severity'].lower())}">{html.escape(item['severity'])}</td>
@@ -205,11 +260,22 @@ def main() -> None:
   </div>
 
   <div class="card">
+    <h2>Score by Framework Domain</h2>
+    <p class="meta">Domains are defined in frameworks.yaml to make each framework-specific audit easier to interpret.</p>
+    <table>
+      <thead>
+        <tr><th>Framework</th><th>Domain</th><th>Passed</th><th>Failed</th><th>OPA Errors</th><th>Undefined</th><th>Achieved Points</th><th>Total Points</th><th>Score</th></tr>
+      </thead>
+      <tbody>{domain_summary_rows(data['results'])}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
     <h2>Control Relationships Across Frameworks</h2>
     <p class="meta">This table is generated by matching the same technical control ID from frameworks.yaml to controls.yaml.</p>
     <table>
       <thead>
-        <tr><th>Technical Control</th><th>Control Title</th><th>Related Frameworks in This Run</th><th>Mapped Items</th><th>Highest Severity</th><th>OPA/Rego Check</th><th>Status</th></tr>
+        <tr><th>Technical Control</th><th>Control Title</th><th>Related Frameworks in This Run</th><th>Framework Domains</th><th>Mapped Items</th><th>Highest Severity</th><th>OPA/Rego Check</th><th>Status</th></tr>
       </thead>
       <tbody>{relationship_rows}</tbody>
     </table>
@@ -219,7 +285,7 @@ def main() -> None:
     <h2>Detailed Audit Results</h2>
     <table>
       <thead>
-        <tr><th>Item</th><th>Framework</th><th>Technical Control</th><th>All Related Frameworks</th><th>Severity</th><th>Points</th><th>Framework Requirement</th><th>Control Item</th><th>OPA/Rego Check</th><th>Status</th><th>Evaluation Message</th></tr>
+        <tr><th>Item</th><th>Framework</th><th>Domain</th><th>Technical Control</th><th>All Related Frameworks</th><th>Severity</th><th>Points</th><th>Framework Requirement</th><th>Control Item</th><th>OPA/Rego Check</th><th>Status</th><th>Evaluation Message</th></tr>
       </thead>
       <tbody>{result_rows}</tbody>
     </table>

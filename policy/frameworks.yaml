@@ -2,1667 +2,1810 @@ frameworks:
   GDPR:
   - id: GDPR-H01
     control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Protection of Personal Data
     severity: HIGH
     score: 5
-    requirement: Block public access to sensitive storage for personal data protection
-      and privacy
+    requirement: Prevent public exposure of personal data stored in object storage.
   - id: GDPR-H02
     control: S3_ENCRYPTED
+    domain: Protection of Personal Data
     severity: HIGH
     score: 5
-    requirement: Encrypt object storage at rest for personal data protection and privacy
+    requirement: Encrypt personal data at rest.
   - id: GDPR-H03
     control: KMS_KEY_ROTATION_ENABLED
+    domain: Cryptographic Protection
     severity: HIGH
     score: 5
-    requirement: Enable KMS key rotation for personal data protection and privacy
+    requirement: Rotate encryption keys used to protect regulated data.
   - id: GDPR-H04
     control: IAM_NO_ADMIN_POLICY
+    domain: Access Control
     severity: HIGH
     score: 5
-    requirement: Prevent wildcard administrator IAM policies for personal data protection
-      and privacy
+    requirement: Avoid excessive administrative access to personal data environments.
   - id: GDPR-H05
     control: CLOUDTRAIL_ENABLED
+    domain: Accountability and Traceability
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for personal data protection and privacy
+    requirement: Maintain audit trails for access and administrative changes.
   - id: GDPR-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for personal data protection and privacy
-  - id: GDPR-H07
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Integrity and Evidence
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for personal data protection
-      and privacy
+    requirement: Protect integrity of audit evidence.
+  - id: GDPR-H07
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Security of Processing
+    severity: HIGH
+    score: 5
+    requirement: Encrypt audit records that may contain personal data metadata.
   - id: GDPR-H08
-    control: GUARDDUTY_ENABLED
+    control: SECRETS_MANAGER_SECRET_ENCRYPTED
+    domain: Credential Protection
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for personal data protection and
-      privacy
+    requirement: Encrypt application secrets used to access personal data.
   - id: GDPR-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
+    control: SECRETS_MANAGER_ROTATION_ENABLED
+    domain: Credential Lifecycle
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for personal data protection
-      and privacy
+    requirement: Rotate secrets used by personal data processing systems.
   - id: GDPR-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
+    control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Attack Surface Reduction
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for personal data protection
-      and privacy
+    requirement: Prevent broad administrative access to personal data workloads.
   - id: GDPR-M01
     control: VPC_FLOW_LOGS_ENABLED
+    domain: Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Enable VPC network flow logging for personal data protection and
-      privacy
+    requirement: Log network activity related to personal data systems.
   - id: GDPR-M02
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Accountability and Traceability
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for personal data protection
-      and privacy
+    requirement: Retain operational logs for investigation and accountability.
   - id: GDPR-M03
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Security of Processing
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for personal data protection and privacy
+    requirement: Encrypt centralized operational logs.
   - id: GDPR-M04
     control: BACKUP_PLAN_EXISTS
+    domain: Availability and Resilience
     severity: MEDIUM
     score: 3
-    requirement: Define backup plan for personal data protection and privacy
+    requirement: Define backup coverage for systems processing personal data.
   - id: GDPR-M05
     control: BACKUP_VAULT_ENCRYPTED
+    domain: Availability and Resilience
     severity: MEDIUM
     score: 3
-    requirement: Encrypt backup vault for personal data protection and privacy
+    requirement: Encrypt backup repositories containing personal data.
   - id: GDPR-M06
     control: S3_VERSIONING_ENABLED
+    domain: Integrity and Recovery
     severity: MEDIUM
     score: 3
-    requirement: Enable object versioning for personal data protection and privacy
+    requirement: Enable object versioning for recovery from accidental or malicious changes.
   - id: GDPR-M07
-    control: S3_LOGGING_ENABLED
+    control: S3_OBJECT_LOCK_ENABLED
+    domain: Retention and Integrity
     severity: MEDIUM
     score: 3
-    requirement: Enable object storage access logging for personal data protection
-      and privacy
+    requirement: Use immutable storage where retention evidence is required.
   - id: GDPR-M08
     control: EC2_NO_PUBLIC_IP
+    domain: Data Exposure Reduction
     severity: MEDIUM
     score: 3
-    requirement: Prevent direct public IP exposure on compute for personal data protection
-      and privacy
+    requirement: Avoid direct public exposure of compute processing personal data.
   - id: GDPR-M09
     control: EC2_IMDSV2_REQUIRED
+    domain: Credential Protection
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for personal data protection
-      and privacy
+    requirement: Require IMDSv2 to reduce metadata credential exposure.
   - id: GDPR-M10
-    control: EC2_EBS_ENCRYPTED
+    control: CONFIG_RECORDER_ENABLED
+    domain: Governance Evidence
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for personal data protection and privacy
+    requirement: Record configuration changes affecting personal data systems.
   - id: GDPR-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for personal data protection
-      and privacy
+    requirement: Require governance tags for assets processing personal data.
   - id: GDPR-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Environment tag for personal data protection and privacy
+    requirement: Identify the processing environment.
   - id: GDPR-L03
     control: OWNER_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Owner tag for personal data protection and privacy
+    requirement: Identify accountable ownership.
   - id: GDPR-L04
     control: PROJECT_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Project tag for personal data protection and privacy
+    requirement: Identify the processing context.
   - id: GDPR-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Data Classification
     severity: LOW
     score: 1
-    requirement: Identify Terraform-managed resources for personal data protection
-      and privacy
+    requirement: Classify storage that may contain personal data.
   - id: GDPR-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
+    control: IAM_ROLE_EXISTS
+    domain: Access Control
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for personal data protection and
-      privacy
+    requirement: Use roles for service access instead of static users.
   - id: GDPR-L07
-    control: IAM_ROLE_EXISTS
+    control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Access Control
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for personal data protection and
-      privacy
+    requirement: Attach workload permissions through instance profiles.
   - id: GDPR-L08
-    control: IAM_INSTANCE_PROFILE_EXISTS
+    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Network Segmentation
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for personal data protection and
-      privacy
+    requirement: Avoid automatic public IP assignment in private subnets.
   - id: GDPR-L09
-    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Network Control
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for personal
-      data protection and privacy
+    requirement: Restrict default outbound internet traffic to HTTPS.
   - id: GDPR-L10
-    control: RESTRICTED_EGRESS_ONLY_HTTPS
-    severity: LOW
-    score: 1
-    requirement: Restrict default outbound traffic to HTTPS for personal data protection
-      and privacy
-  NIST_CSF:
-  - id: NIST_CSF-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for cybersecurity risk management
-  - id: NIST_CSF-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for cybersecurity risk management
-  - id: NIST_CSF-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for cybersecurity risk management
-  - id: NIST_CSF-H04
-    control: IAM_NO_ADMIN_POLICY
-    severity: HIGH
-    score: 5
-    requirement: Prevent wildcard administrator IAM policies for cybersecurity risk
-      management
-  - id: NIST_CSF-H05
-    control: CLOUDTRAIL_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable centralized audit trail for cybersecurity risk management
-  - id: NIST_CSF-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for cybersecurity risk management
-  - id: NIST_CSF-H07
-    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable CloudTrail log file validation for cybersecurity risk management
-  - id: NIST_CSF-H08
-    control: GUARDDUTY_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable threat detection service for cybersecurity risk management
-  - id: NIST_CSF-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent SSH exposure to the internet for cybersecurity risk management
-  - id: NIST_CSF-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent RDP exposure to the internet for cybersecurity risk management
-  - id: NIST_CSF-M01
-    control: VPC_FLOW_LOGS_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable VPC network flow logging for cybersecurity risk management
-  - id: NIST_CSF-M02
-    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
-    severity: MEDIUM
-    score: 3
-    requirement: Retain operational logs for at least 90 days for cybersecurity risk
-      management
-  - id: NIST_CSF-M03
-    control: CLOUDWATCH_LOGS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt centralized logs for cybersecurity risk management
-  - id: NIST_CSF-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for cybersecurity risk management
-  - id: NIST_CSF-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for cybersecurity risk management
-  - id: NIST_CSF-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for cybersecurity risk management
-  - id: NIST_CSF-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for cybersecurity risk management
-  - id: NIST_CSF-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for cybersecurity risk
-      management
-  - id: NIST_CSF-M09
-    control: EC2_IMDSV2_REQUIRED
-    severity: MEDIUM
-    score: 3
-    requirement: Require IMDSv2 on compute instances for cybersecurity risk management
-  - id: NIST_CSF-M10
-    control: EC2_EBS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt compute block storage for cybersecurity risk management
-  - id: NIST_CSF-L01
-    control: REQUIRED_TAGS_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require governance tags on key resources for cybersecurity risk management
-  - id: NIST_CSF-L02
-    control: ENVIRONMENT_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Environment tag for cybersecurity risk management
-  - id: NIST_CSF-L03
-    control: OWNER_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Owner tag for cybersecurity risk management
-  - id: NIST_CSF-L04
-    control: PROJECT_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Project tag for cybersecurity risk management
-  - id: NIST_CSF-L05
     control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Identify Terraform-managed resources for cybersecurity risk management
-  - id: NIST_CSF-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
+    requirement: Identify resources managed by IaC.
+  NIST_CSF:
+  - id: NIST-H01
+    control: IAM_NO_ADMIN_POLICY
+    domain: PR.AA Identity Management
+    severity: HIGH
+    score: 5
+    requirement: Limit excessive privileged access.
+  - id: NIST-H02
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: PR.DS Data Security
+    severity: HIGH
+    score: 5
+    requirement: Protect cloud storage from public exposure.
+  - id: NIST-H03
+    control: S3_ENCRYPTED
+    domain: PR.DS Data Security
+    severity: HIGH
+    score: 5
+    requirement: Protect data at rest using encryption.
+  - id: NIST-H04
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: PR.DS Data Security
+    severity: HIGH
+    score: 5
+    requirement: Manage cryptographic key lifecycle.
+  - id: NIST-H05
+    control: CLOUDTRAIL_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Collect audit events for detection and investigation.
+  - id: NIST-H06
+    control: CLOUDTRAIL_MULTI_REGION_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Monitor API activity across regions.
+  - id: NIST-H07
+    control: GUARDDUTY_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Enable threat detection telemetry.
+  - id: NIST-H08
+    control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: PR.PS Platform Security
+    severity: HIGH
+    score: 5
+    requirement: Reduce externally reachable administrative services.
+  - id: NIST-H09
+    control: SECURITY_GROUP_NO_RDP_WORLD
+    domain: PR.PS Platform Security
+    severity: HIGH
+    score: 5
+    requirement: Reduce remotely exposed administrative services.
+  - id: NIST-H10
+    control: CONFIG_RECORDER_ENABLED
+    domain: GV.OV Oversight
+    severity: HIGH
+    score: 5
+    requirement: Record configuration state for governance oversight.
+  - id: NIST-M01
+    control: VPC_FLOW_LOGS_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: MEDIUM
+    score: 3
+    requirement: Monitor network activity.
+  - id: NIST-M02
+    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: DE.CM Continuous Monitoring
+    severity: MEDIUM
+    score: 3
+    requirement: Retain logs for investigation.
+  - id: NIST-M03
+    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: MEDIUM
+    score: 3
+    requirement: Validate integrity of security logs.
+  - id: NIST-M04
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: PR.DS Data Security
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt audit logs.
+  - id: NIST-M05
+    control: BACKUP_PLAN_EXISTS
+    domain: RC.RP Recovery Planning
+    severity: MEDIUM
+    score: 3
+    requirement: Define recovery coverage.
+  - id: NIST-M06
+    control: BACKUP_VAULT_ENCRYPTED
+    domain: RC.RP Recovery Planning
+    severity: MEDIUM
+    score: 3
+    requirement: Protect backup repositories.
+  - id: NIST-M07
+    control: EC2_IMDSV2_REQUIRED
+    domain: PR.AA Identity Management
+    severity: MEDIUM
+    score: 3
+    requirement: Protect workload credentials from metadata abuse.
+  - id: NIST-M08
+    control: EC2_EBS_ENCRYPTED
+    domain: PR.DS Data Security
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt workload storage.
+  - id: NIST-M09
+    control: WAF_WEB_ACL_EXISTS
+    domain: PR.PS Platform Security
+    severity: MEDIUM
+    score: 3
+    requirement: Use application-layer protection where applicable.
+  - id: NIST-M10
+    control: ALB_DELETION_PROTECTION_ENABLED
+    domain: RC.RP Recovery Planning
+    severity: MEDIUM
+    score: 3
+    requirement: Reduce accidental disruption of front-end services.
+  - id: NIST-L01
+    control: REQUIRED_TAGS_PRESENT
+    domain: ID.AM Asset Management
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for cybersecurity risk management
-  - id: NIST_CSF-L07
+    requirement: Maintain asset metadata.
+  - id: NIST-L02
+    control: ENVIRONMENT_TAG_PRESENT
+    domain: ID.AM Asset Management
+    severity: LOW
+    score: 1
+    requirement: Identify asset environment.
+  - id: NIST-L03
+    control: OWNER_TAG_PRESENT
+    domain: GV.RR Roles and Responsibilities
+    severity: LOW
+    score: 1
+    requirement: Identify asset owner.
+  - id: NIST-L04
+    control: PROJECT_TAG_PRESENT
+    domain: ID.AM Asset Management
+    severity: LOW
+    score: 1
+    requirement: Identify asset business context.
+  - id: NIST-L05
     control: IAM_ROLE_EXISTS
+    domain: PR.AA Identity Management
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for cybersecurity risk management
-  - id: NIST_CSF-L08
+    requirement: Use role-based workload access.
+  - id: NIST-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: PR.AA Identity Management
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for cybersecurity risk management
-  - id: NIST_CSF-L09
+    requirement: Bind compute access through instance profiles.
+  - id: NIST-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: PR.PS Platform Security
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for cybersecurity
-      risk management
-  - id: NIST_CSF-L10
+    requirement: Avoid automatic public exposure.
+  - id: NIST-L08
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: PR.PS Platform Security
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for cybersecurity risk
-      management
+    requirement: Restrict default egress behavior.
+  - id: NIST-L09
+    control: S3_LOGGING_ENABLED
+    domain: DE.CM Continuous Monitoring
+    severity: LOW
+    score: 1
+    requirement: Capture object access logs.
+  - id: NIST-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: GV.OV Oversight
+    severity: LOW
+    score: 1
+    requirement: Identify IaC-managed resources.
   CIS:
   - id: CIS-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for secure configuration
-      and cyber hygiene
-  - id: CIS-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for secure configuration and cyber
-      hygiene
-  - id: CIS-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for secure configuration and cyber hygiene
-  - id: CIS-H04
     control: IAM_NO_ADMIN_POLICY
+    domain: Account Management
     severity: HIGH
     score: 5
-    requirement: Prevent wildcard administrator IAM policies for secure configuration
-      and cyber hygiene
+    requirement: Avoid overly permissive IAM policies.
+  - id: CIS-H02
+    control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Network Infrastructure Management
+    severity: HIGH
+    score: 5
+    requirement: Do not expose SSH to the internet.
+  - id: CIS-H03
+    control: SECURITY_GROUP_NO_RDP_WORLD
+    domain: Network Infrastructure Management
+    severity: HIGH
+    score: 5
+    requirement: Do not expose RDP to the internet.
+  - id: CIS-H04
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Data Protection
+    severity: HIGH
+    score: 5
+    requirement: Block public object storage exposure.
   - id: CIS-H05
-    control: CLOUDTRAIL_ENABLED
+    control: S3_ENCRYPTED
+    domain: Data Protection
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for secure configuration and cyber
-      hygiene
+    requirement: Encrypt object storage.
   - id: CIS-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
+    control: CLOUDTRAIL_ENABLED
+    domain: Audit Log Management
     severity: HIGH
     score: 5
-    requirement: Enable multi-region CloudTrail for secure configuration and cyber
-      hygiene
+    requirement: Enable audit logging.
   - id: CIS-H07
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Audit Log Management
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for secure configuration and
-      cyber hygiene
+    requirement: Enable log file integrity validation.
   - id: CIS-H08
     control: GUARDDUTY_ENABLED
+    domain: Continuous Vulnerability Management
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for secure configuration and cyber
-      hygiene
+    requirement: Enable cloud threat detection.
   - id: CIS-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent SSH exposure to the internet for secure configuration and
-      cyber hygiene
-  - id: CIS-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent RDP exposure to the internet for secure configuration and
-      cyber hygiene
-  - id: CIS-M01
     control: VPC_FLOW_LOGS_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable VPC network flow logging for secure configuration and cyber
-      hygiene
-  - id: CIS-M02
+    domain: Network Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Enable network flow logging.
+  - id: CIS-H10
+    control: CONFIG_RECORDER_ENABLED
+    domain: Secure Configuration
+    severity: HIGH
+    score: 5
+    requirement: Record configuration changes.
+  - id: CIS-M01
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Audit Log Management
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for secure configuration
-      and cyber hygiene
-  - id: CIS-M03
+    requirement: Retain logs for operational review.
+  - id: CIS-M02
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Data Protection
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for secure configuration and cyber hygiene
-  - id: CIS-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for secure configuration and cyber hygiene
-  - id: CIS-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for secure configuration and cyber hygiene
-  - id: CIS-M06
+    requirement: Encrypt operational logs.
+  - id: CIS-M03
     control: S3_VERSIONING_ENABLED
+    domain: Data Recovery
     severity: MEDIUM
     score: 3
-    requirement: Enable object versioning for secure configuration and cyber hygiene
-  - id: CIS-M07
+    requirement: Enable storage versioning.
+  - id: CIS-M04
     control: S3_LOGGING_ENABLED
+    domain: Audit Log Management
     severity: MEDIUM
     score: 3
-    requirement: Enable object storage access logging for secure configuration and
-      cyber hygiene
-  - id: CIS-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for secure configuration
-      and cyber hygiene
-  - id: CIS-M09
+    requirement: Enable object access logs.
+  - id: CIS-M05
     control: EC2_IMDSV2_REQUIRED
+    domain: Secure Configuration
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for secure configuration and
-      cyber hygiene
-  - id: CIS-M10
+    requirement: Require hardened metadata access.
+  - id: CIS-M06
     control: EC2_EBS_ENCRYPTED
+    domain: Data Protection
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for secure configuration and cyber
-      hygiene
+    requirement: Encrypt compute volumes.
+  - id: CIS-M07
+    control: EC2_NO_PUBLIC_IP
+    domain: Network Infrastructure Management
+    severity: MEDIUM
+    score: 3
+    requirement: Avoid direct compute exposure.
+  - id: CIS-M08
+    control: ECR_SCAN_ON_PUSH_ENABLED
+    domain: Malware Defenses
+    severity: MEDIUM
+    score: 3
+    requirement: Scan container images on push.
+  - id: CIS-M09
+    control: ECR_IMAGE_TAG_IMMUTABLE
+    domain: Secure Configuration
+    severity: MEDIUM
+    score: 3
+    requirement: Prevent mutable image tags.
+  - id: CIS-M10
+    control: WAF_WEB_ACL_EXISTS
+    domain: Application Software Security
+    severity: MEDIUM
+    score: 3
+    requirement: Use web application filtering.
   - id: CIS-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Inventory and Control
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for secure configuration
-      and cyber hygiene
+    requirement: Require baseline resource tags.
   - id: CIS-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Inventory and Control
     severity: LOW
     score: 1
-    requirement: Require Environment tag for secure configuration and cyber hygiene
+    requirement: Identify the environment.
   - id: CIS-L03
     control: OWNER_TAG_PRESENT
+    domain: Inventory and Control
     severity: LOW
     score: 1
-    requirement: Require Owner tag for secure configuration and cyber hygiene
+    requirement: Identify asset owner.
   - id: CIS-L04
     control: PROJECT_TAG_PRESENT
+    domain: Inventory and Control
     severity: LOW
     score: 1
-    requirement: Require Project tag for secure configuration and cyber hygiene
+    requirement: Identify business context.
   - id: CIS-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    control: IAM_ROLE_EXISTS
+    domain: Account Management
     severity: LOW
     score: 1
-    requirement: Identify Terraform-managed resources for secure configuration and
-      cyber hygiene
+    requirement: Use IAM roles for workloads.
   - id: CIS-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
+    control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Account Management
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for secure configuration and cyber
-      hygiene
+    requirement: Use instance profiles for compute.
   - id: CIS-L07
-    control: IAM_ROLE_EXISTS
+    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Network Infrastructure Management
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for secure configuration and cyber
-      hygiene
+    requirement: Disable public IP auto-assignment.
   - id: CIS-L08
-    control: IAM_INSTANCE_PROFILE_EXISTS
+    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Network Infrastructure Management
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for secure configuration and cyber
-      hygiene
+    requirement: Restrict outbound traffic to HTTPS.
   - id: CIS-L09
-    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Data Protection
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for secure
-      configuration and cyber hygiene
+    requirement: Classify storage resources.
   - id: CIS-L10
-    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Secure Configuration
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for secure configuration
-      and cyber hygiene
+    requirement: Identify IaC-managed assets.
   ISO27001:
-  - id: ISO27001-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for information security
-      management controls
-  - id: ISO27001-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for information security management
-      controls
-  - id: ISO27001-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for information security management controls
-  - id: ISO27001-H04
+  - id: ISO-H01
     control: IAM_NO_ADMIN_POLICY
+    domain: Access Control
     severity: HIGH
     score: 5
-    requirement: Prevent wildcard administrator IAM policies for information security
-      management controls
-  - id: ISO27001-H05
+    requirement: Enforce least privilege for cloud administration.
+  - id: ISO-H02
+    control: S3_ENCRYPTED
+    domain: Cryptography
+    severity: HIGH
+    score: 5
+    requirement: Protect stored information using encryption.
+  - id: ISO-H03
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: Cryptography
+    severity: HIGH
+    score: 5
+    requirement: Manage cryptographic key lifecycle.
+  - id: ISO-H04
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Information Transfer
+    severity: HIGH
+    score: 5
+    requirement: Prevent unintended public disclosure.
+  - id: ISO-H05
     control: CLOUDTRAIL_ENABLED
+    domain: Logging and Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for information security management
-      controls
-  - id: ISO27001-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for information security management
-      controls
-  - id: ISO27001-H07
+    requirement: Record administrative and access events.
+  - id: ISO-H06
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Logging and Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for information security management
-      controls
-  - id: ISO27001-H08
-    control: GUARDDUTY_ENABLED
+    requirement: Protect integrity of audit records.
+  - id: ISO-H07
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Logging and Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for information security management
-      controls
-  - id: ISO27001-H09
+    requirement: Encrypt security logs.
+  - id: ISO-H08
     control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Network Security
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for information security management
-      controls
-  - id: ISO27001-H10
+    requirement: Restrict administrative network access.
+  - id: ISO-H09
     control: SECURITY_GROUP_NO_RDP_WORLD
+    domain: Network Security
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for information security management
-      controls
-  - id: ISO27001-M01
+    requirement: Restrict remote administrative access.
+  - id: ISO-H10
+    control: SECRETS_MANAGER_ROTATION_ENABLED
+    domain: Identity and Secrets Management
+    severity: HIGH
+    score: 5
+    requirement: Rotate sensitive authentication secrets.
+  - id: ISO-M01
     control: VPC_FLOW_LOGS_ENABLED
+    domain: Network Security
     severity: MEDIUM
     score: 3
-    requirement: Enable VPC network flow logging for information security management
-      controls
-  - id: ISO27001-M02
+    requirement: Collect network traffic records.
+  - id: ISO-M02
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for information security
-      management controls
-  - id: ISO27001-M03
+    requirement: Retain logs for investigation.
+  - id: ISO-M03
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for information security management controls
-  - id: ISO27001-M04
+    requirement: Encrypt central log storage.
+  - id: ISO-M04
     control: BACKUP_PLAN_EXISTS
+    domain: Backup and Recovery
     severity: MEDIUM
     score: 3
-    requirement: Define backup plan for information security management controls
-  - id: ISO27001-M05
+    requirement: Define backup controls.
+  - id: ISO-M05
     control: BACKUP_VAULT_ENCRYPTED
+    domain: Backup and Recovery
     severity: MEDIUM
     score: 3
-    requirement: Encrypt backup vault for information security management controls
-  - id: ISO27001-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for information security management controls
-  - id: ISO27001-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for information security management
-      controls
-  - id: ISO27001-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for information security
-      management controls
-  - id: ISO27001-M09
+    requirement: Protect backup repositories.
+  - id: ISO-M06
     control: EC2_IMDSV2_REQUIRED
+    domain: Secure Configuration
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for information security management
-      controls
-  - id: ISO27001-M10
+    requirement: Harden workload metadata access.
+  - id: ISO-M07
     control: EC2_EBS_ENCRYPTED
+    domain: Asset Protection
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for information security management
-      controls
-  - id: ISO27001-L01
+    requirement: Encrypt compute storage.
+  - id: ISO-M08
+    control: CONFIG_RECORDER_ENABLED
+    domain: Configuration Management
+    severity: MEDIUM
+    score: 3
+    requirement: Maintain configuration evidence.
+  - id: ISO-M09
+    control: WAF_WEB_ACL_EXISTS
+    domain: Application Security
+    severity: MEDIUM
+    score: 3
+    requirement: Use web application protection.
+  - id: ISO-M10
+    control: RDS_DELETION_PROTECTION_ENABLED
+    domain: Availability
+    severity: MEDIUM
+    score: 3
+    requirement: Protect databases from accidental deletion.
+  - id: ISO-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Asset Management
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for information security
-      management controls
-  - id: ISO27001-L02
+    requirement: Maintain asset metadata.
+  - id: ISO-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Asset Management
     severity: LOW
     score: 1
-    requirement: Require Environment tag for information security management controls
-  - id: ISO27001-L03
+    requirement: Identify operational environment.
+  - id: ISO-L03
     control: OWNER_TAG_PRESENT
+    domain: Asset Management
     severity: LOW
     score: 1
-    requirement: Require Owner tag for information security management controls
-  - id: ISO27001-L04
+    requirement: Identify accountable owner.
+  - id: ISO-L04
     control: PROJECT_TAG_PRESENT
+    domain: Asset Management
     severity: LOW
     score: 1
-    requirement: Require Project tag for information security management controls
-  - id: ISO27001-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for information security management
-      controls
-  - id: ISO27001-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Classify data storage resources for information security management
-      controls
-  - id: ISO27001-L07
+    requirement: Identify business context.
+  - id: ISO-L05
     control: IAM_ROLE_EXISTS
+    domain: Access Control
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for information security management
-      controls
-  - id: ISO27001-L08
+    requirement: Use workload roles.
+  - id: ISO-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Access Control
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for information security management
-      controls
-  - id: ISO27001-L09
+    requirement: Use instance profiles.
+  - id: ISO-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Network Security
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for information
-      security management controls
-  - id: ISO27001-L10
+    requirement: Avoid automatic public exposure.
+  - id: ISO-L08
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Network Security
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for information security
-      management controls
+    requirement: Restrict outbound communication.
+  - id: ISO-L09
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Information Classification
+    severity: LOW
+    score: 1
+    requirement: Label sensitive storage.
+  - id: ISO-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Configuration Management
+    severity: LOW
+    score: 1
+    requirement: Identify IaC-managed resources.
   PCI_DSS:
-  - id: PCI_DSS-H01
+  - id: PCI-H01
     control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Requirement 1 Network Security Controls
     severity: HIGH
     score: 5
-    requirement: Block public access to sensitive storage for cardholder data security
-  - id: PCI_DSS-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for cardholder data security
-  - id: PCI_DSS-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for cardholder data security
-  - id: PCI_DSS-H04
-    control: IAM_NO_ADMIN_POLICY
-    severity: HIGH
-    score: 5
-    requirement: Prevent wildcard administrator IAM policies for cardholder data security
-  - id: PCI_DSS-H05
-    control: CLOUDTRAIL_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable centralized audit trail for cardholder data security
-  - id: PCI_DSS-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for cardholder data security
-  - id: PCI_DSS-H07
-    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable CloudTrail log file validation for cardholder data security
-  - id: PCI_DSS-H08
-    control: GUARDDUTY_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable threat detection service for cardholder data security
-  - id: PCI_DSS-H09
+    requirement: Protect storage containing payment data from public exposure.
+  - id: PCI-H02
     control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Requirement 1 Network Security Controls
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for cardholder data security
-  - id: PCI_DSS-H10
+    requirement: Restrict administrative inbound access.
+  - id: PCI-H03
     control: SECURITY_GROUP_NO_RDP_WORLD
+    domain: Requirement 1 Network Security Controls
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for cardholder data security
-  - id: PCI_DSS-M01
+    requirement: Restrict remote desktop exposure.
+  - id: PCI-H04
+    control: S3_ENCRYPTED
+    domain: Requirement 3 Protect Account Data
+    severity: HIGH
+    score: 5
+    requirement: Encrypt storage that may contain account data.
+  - id: PCI-H05
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: Requirement 3 Protect Account Data
+    severity: HIGH
+    score: 5
+    requirement: Manage encryption keys securely.
+  - id: PCI-H06
+    control: IAM_NO_ADMIN_POLICY
+    domain: Requirement 7 Restrict Access
+    severity: HIGH
+    score: 5
+    requirement: Restrict access by least privilege.
+  - id: PCI-H07
+    control: CLOUDTRAIL_ENABLED
+    domain: Requirement 10 Logging and Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Log access and administrative activity.
+  - id: PCI-H08
+    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Requirement 10 Logging and Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Protect log integrity.
+  - id: PCI-H09
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Requirement 10 Logging and Monitoring
+    severity: HIGH
+    score: 5
+    requirement: Encrypt audit logs.
+  - id: PCI-H10
+    control: WAF_WEB_ACL_EXISTS
+    domain: Requirement 6 Secure Systems and Software
+    severity: HIGH
+    score: 5
+    requirement: Use application-layer protection for payment-facing services.
+  - id: PCI-M01
     control: VPC_FLOW_LOGS_ENABLED
+    domain: Requirement 10 Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Enable VPC network flow logging for cardholder data security
-  - id: PCI_DSS-M02
+    requirement: Log network traffic in payment environments.
+  - id: PCI-M02
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Requirement 10 Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for cardholder data
-      security
-  - id: PCI_DSS-M03
+    requirement: Retain security logs.
+  - id: PCI-M03
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Requirement 10 Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for cardholder data security
-  - id: PCI_DSS-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for cardholder data security
-  - id: PCI_DSS-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for cardholder data security
-  - id: PCI_DSS-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for cardholder data security
-  - id: PCI_DSS-M07
+    requirement: Encrypt centralized logs.
+  - id: PCI-M04
     control: S3_LOGGING_ENABLED
+    domain: Requirement 10 Logging and Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Enable object storage access logging for cardholder data security
-  - id: PCI_DSS-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for cardholder data
-      security
-  - id: PCI_DSS-M09
+    requirement: Log object access.
+  - id: PCI-M05
     control: EC2_IMDSV2_REQUIRED
+    domain: Requirement 2 Secure Configurations
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for cardholder data security
-  - id: PCI_DSS-M10
+    requirement: Harden cloud instance metadata access.
+  - id: PCI-M06
     control: EC2_EBS_ENCRYPTED
+    domain: Requirement 3 Protect Account Data
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for cardholder data security
-  - id: PCI_DSS-L01
+    requirement: Encrypt compute storage.
+  - id: PCI-M07
+    control: EC2_NO_PUBLIC_IP
+    domain: Requirement 1 Network Security Controls
+    severity: MEDIUM
+    score: 3
+    requirement: Avoid direct internet exposure of payment workloads.
+  - id: PCI-M08
+    control: RDS_ENCRYPTED
+    domain: Requirement 3 Protect Account Data
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt databases containing account data.
+  - id: PCI-M09
+    control: RDS_BACKUP_RETENTION_ENABLED
+    domain: Requirement 12 Security Program Management
+    severity: MEDIUM
+    score: 3
+    requirement: Retain backups for payment systems.
+  - id: PCI-M10
+    control: SECRETS_MANAGER_ROTATION_ENABLED
+    domain: Requirement 8 Identify Users and Authenticate Access
+    severity: MEDIUM
+    score: 3
+    requirement: Rotate authentication secrets.
+  - id: PCI-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Requirement 12 Security Program Management
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for cardholder data security
-  - id: PCI_DSS-L02
+    requirement: Maintain governance metadata.
+  - id: PCI-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Requirement 12 Security Program Management
     severity: LOW
     score: 1
-    requirement: Require Environment tag for cardholder data security
-  - id: PCI_DSS-L03
+    requirement: Identify payment environment.
+  - id: PCI-L03
     control: OWNER_TAG_PRESENT
+    domain: Requirement 12 Security Program Management
     severity: LOW
     score: 1
-    requirement: Require Owner tag for cardholder data security
-  - id: PCI_DSS-L04
+    requirement: Identify accountable owner.
+  - id: PCI-L04
     control: PROJECT_TAG_PRESENT
+    domain: Requirement 12 Security Program Management
     severity: LOW
     score: 1
-    requirement: Require Project tag for cardholder data security
-  - id: PCI_DSS-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for cardholder data security
-  - id: PCI_DSS-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Classify data storage resources for cardholder data security
-  - id: PCI_DSS-L07
+    requirement: Identify business context.
+  - id: PCI-L05
     control: IAM_ROLE_EXISTS
+    domain: Requirement 7 Restrict Access
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for cardholder data security
-  - id: PCI_DSS-L08
+    requirement: Use role-based workload access.
+  - id: PCI-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Requirement 7 Restrict Access
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for cardholder data security
-  - id: PCI_DSS-L09
+    requirement: Use compute instance profiles.
+  - id: PCI-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Requirement 1 Network Security Controls
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for cardholder
-      data security
-  - id: PCI_DSS-L10
+    requirement: Avoid public IP auto-assignment.
+  - id: PCI-L08
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Requirement 1 Network Security Controls
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for cardholder data security
+    requirement: Restrict default outbound traffic.
+  - id: PCI-L09
+    control: ECR_SCAN_ON_PUSH_ENABLED
+    domain: Requirement 6 Secure Systems and Software
+    severity: LOW
+    score: 1
+    requirement: Scan container images.
+  - id: PCI-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Requirement 2 Secure Configurations
+    severity: LOW
+    score: 1
+    requirement: Identify IaC-managed assets.
   SOC2:
   - id: SOC2-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for trust services criteria
-  - id: SOC2-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for trust services criteria
-  - id: SOC2-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for trust services criteria
-  - id: SOC2-H04
     control: IAM_NO_ADMIN_POLICY
+    domain: Security - Logical Access
     severity: HIGH
     score: 5
-    requirement: Prevent wildcard administrator IAM policies for trust services criteria
+    requirement: Restrict privileged access.
+  - id: SOC2-H02
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Confidentiality
+    severity: HIGH
+    score: 5
+    requirement: Prevent public exposure of confidential data.
+  - id: SOC2-H03
+    control: S3_ENCRYPTED
+    domain: Confidentiality
+    severity: HIGH
+    score: 5
+    requirement: Encrypt confidential information at rest.
+  - id: SOC2-H04
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: Confidentiality
+    severity: HIGH
+    score: 5
+    requirement: Manage encryption keys.
   - id: SOC2-H05
     control: CLOUDTRAIL_ENABLED
+    domain: Security - Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for trust services criteria
+    requirement: Log administrative activities.
   - id: SOC2-H06
     control: CLOUDTRAIL_MULTI_REGION_ENABLED
+    domain: Security - Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable multi-region CloudTrail for trust services criteria
+    requirement: Monitor activity across regions.
   - id: SOC2-H07
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Security - Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for trust services criteria
+    requirement: Protect audit log integrity.
   - id: SOC2-H08
     control: GUARDDUTY_ENABLED
+    domain: Security - Monitoring
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for trust services criteria
+    requirement: Detect malicious activity.
   - id: SOC2-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
+    control: BACKUP_PLAN_EXISTS
+    domain: Availability
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for trust services criteria
+    requirement: Maintain backup coverage.
   - id: SOC2-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
+    control: BACKUP_VAULT_ENCRYPTED
+    domain: Availability
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for trust services criteria
+    requirement: Protect backups.
   - id: SOC2-M01
     control: VPC_FLOW_LOGS_ENABLED
+    domain: Security - Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Enable VPC network flow logging for trust services criteria
+    requirement: Log network traffic.
   - id: SOC2-M02
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Security - Monitoring
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for trust services criteria
+    requirement: Retain logs for review.
   - id: SOC2-M03
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Confidentiality
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for trust services criteria
+    requirement: Encrypt operational logs.
   - id: SOC2-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for trust services criteria
-  - id: SOC2-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for trust services criteria
-  - id: SOC2-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for trust services criteria
-  - id: SOC2-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for trust services criteria
-  - id: SOC2-M08
     control: EC2_NO_PUBLIC_IP
+    domain: Security - Network Controls
     severity: MEDIUM
     score: 3
-    requirement: Prevent direct public IP exposure on compute for trust services criteria
-  - id: SOC2-M09
+    requirement: Avoid direct public exposure.
+  - id: SOC2-M05
     control: EC2_IMDSV2_REQUIRED
+    domain: Security - Secure Configuration
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for trust services criteria
-  - id: SOC2-M10
+    requirement: Require hardened metadata access.
+  - id: SOC2-M06
     control: EC2_EBS_ENCRYPTED
+    domain: Confidentiality
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for trust services criteria
+    requirement: Encrypt compute storage.
+  - id: SOC2-M07
+    control: CONFIG_RECORDER_ENABLED
+    domain: Processing Integrity
+    severity: MEDIUM
+    score: 3
+    requirement: Record configuration changes.
+  - id: SOC2-M08
+    control: RDS_DELETION_PROTECTION_ENABLED
+    domain: Availability
+    severity: MEDIUM
+    score: 3
+    requirement: Protect database availability.
+  - id: SOC2-M09
+    control: SNS_ENCRYPTED
+    domain: Confidentiality
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt notification data.
+  - id: SOC2-M10
+    control: SQS_ENCRYPTED
+    domain: Confidentiality
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt queue data.
   - id: SOC2-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for trust services criteria
+    requirement: Maintain resource metadata.
   - id: SOC2-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Environment tag for trust services criteria
+    requirement: Identify environment.
   - id: SOC2-L03
     control: OWNER_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Owner tag for trust services criteria
+    requirement: Identify resource owner.
   - id: SOC2-L04
     control: PROJECT_TAG_PRESENT
+    domain: Governance
     severity: LOW
     score: 1
-    requirement: Require Project tag for trust services criteria
+    requirement: Identify business context.
   - id: SOC2-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for trust services criteria
-  - id: SOC2-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Classify data storage resources for trust services criteria
-  - id: SOC2-L07
     control: IAM_ROLE_EXISTS
+    domain: Logical Access
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for trust services criteria
-  - id: SOC2-L08
+    requirement: Use roles for workload access.
+  - id: SOC2-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Logical Access
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for trust services criteria
-  - id: SOC2-L09
+    requirement: Use instance profiles.
+  - id: SOC2-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Network Controls
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for trust
-      services criteria
-  - id: SOC2-L10
+    requirement: Avoid automatic public exposure.
+  - id: SOC2-L08
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Network Controls
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for trust services criteria
+    requirement: Restrict outbound internet traffic.
+  - id: SOC2-L09
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Confidentiality
+    severity: LOW
+    score: 1
+    requirement: Classify confidential storage.
+  - id: SOC2-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Change Management
+    severity: LOW
+    score: 1
+    requirement: Identify IaC-managed assets.
   MITRE:
   - id: MITRE-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for adversary technique
-      mitigation and detection
-  - id: MITRE-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for adversary technique mitigation
-      and detection
-  - id: MITRE-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for adversary technique mitigation and detection
-  - id: MITRE-H04
-    control: IAM_NO_ADMIN_POLICY
-    severity: HIGH
-    score: 5
-    requirement: Prevent wildcard administrator IAM policies for adversary technique
-      mitigation and detection
-  - id: MITRE-H05
-    control: CLOUDTRAIL_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable centralized audit trail for adversary technique mitigation
-      and detection
-  - id: MITRE-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for adversary technique mitigation
-      and detection
-  - id: MITRE-H07
-    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable CloudTrail log file validation for adversary technique mitigation
-      and detection
-  - id: MITRE-H08
     control: GUARDDUTY_ENABLED
+    domain: Detection Engineering
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for adversary technique mitigation
-      and detection
-  - id: MITRE-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
+    requirement: Enable detection of adversary behavior.
+  - id: MITRE-H02
+    control: CLOUDTRAIL_ENABLED
+    domain: Collection
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for adversary technique mitigation
-      and detection
-  - id: MITRE-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
+    requirement: Collect cloud control-plane events.
+  - id: MITRE-H03
+    control: CLOUDTRAIL_MULTI_REGION_ENABLED
+    domain: Collection
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for adversary technique mitigation
-      and detection
-  - id: MITRE-M01
+    requirement: Collect events across regions.
+  - id: MITRE-H04
     control: VPC_FLOW_LOGS_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable VPC network flow logging for adversary technique mitigation
-      and detection
-  - id: MITRE-M02
-    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
-    severity: MEDIUM
-    score: 3
-    requirement: Retain operational logs for at least 90 days for adversary technique
-      mitigation and detection
-  - id: MITRE-M03
-    control: CLOUDWATCH_LOGS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt centralized logs for adversary technique mitigation and detection
-  - id: MITRE-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for adversary technique mitigation and detection
-  - id: MITRE-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for adversary technique mitigation and detection
-  - id: MITRE-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for adversary technique mitigation and detection
-  - id: MITRE-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for adversary technique mitigation
-      and detection
-  - id: MITRE-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for adversary technique
-      mitigation and detection
-  - id: MITRE-M09
+    domain: Network Traffic Collection
+    severity: HIGH
+    score: 5
+    requirement: Collect network telemetry for investigation.
+  - id: MITRE-H05
+    control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Attack Surface Reduction
+    severity: HIGH
+    score: 5
+    requirement: Reduce initial access through exposed SSH.
+  - id: MITRE-H06
+    control: SECURITY_GROUP_NO_RDP_WORLD
+    domain: Attack Surface Reduction
+    severity: HIGH
+    score: 5
+    requirement: Reduce initial access through exposed RDP.
+  - id: MITRE-H07
+    control: IAM_NO_ADMIN_POLICY
+    domain: Privilege Escalation Mitigation
+    severity: HIGH
+    score: 5
+    requirement: Avoid broad permissions that enable escalation.
+  - id: MITRE-H08
     control: EC2_IMDSV2_REQUIRED
+    domain: Credential Access Mitigation
+    severity: HIGH
+    score: 5
+    requirement: Reduce metadata credential theft risk.
+  - id: MITRE-H09
+    control: WAF_WEB_ACL_EXISTS
+    domain: Initial Access Mitigation
+    severity: HIGH
+    score: 5
+    requirement: Filter web-based attack traffic.
+  - id: MITRE-H10
+    control: API_GATEWAY_AUTHORIZER_CONFIGURED
+    domain: Valid Accounts Mitigation
+    severity: HIGH
+    score: 5
+    requirement: Require authorization on APIs.
+  - id: MITRE-M01
+    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Forensics Readiness
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for adversary technique mitigation
-      and detection
+    requirement: Retain telemetry for investigation.
+  - id: MITRE-M02
+    control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Defense Evasion Resistance
+    severity: MEDIUM
+    score: 3
+    requirement: Protect security telemetry.
+  - id: MITRE-M03
+    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Defense Evasion Resistance
+    severity: MEDIUM
+    score: 3
+    requirement: Detect tampering with logs.
+  - id: MITRE-M04
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Defense Evasion Resistance
+    severity: MEDIUM
+    score: 3
+    requirement: Protect audit records.
+  - id: MITRE-M05
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Exfiltration Mitigation
+    severity: MEDIUM
+    score: 3
+    requirement: Reduce public data exposure.
+  - id: MITRE-M06
+    control: S3_LOGGING_ENABLED
+    domain: Collection
+    severity: MEDIUM
+    score: 3
+    requirement: Collect object storage access evidence.
+  - id: MITRE-M07
+    control: EC2_NO_PUBLIC_IP
+    domain: Attack Surface Reduction
+    severity: MEDIUM
+    score: 3
+    requirement: Reduce internet-exposed compute.
+  - id: MITRE-M08
+    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Command and Control Mitigation
+    severity: MEDIUM
+    score: 3
+    requirement: Constrain default outbound paths.
+  - id: MITRE-M09
+    control: ECR_SCAN_ON_PUSH_ENABLED
+    domain: Execution Mitigation
+    severity: MEDIUM
+    score: 3
+    requirement: Detect vulnerable container images.
   - id: MITRE-M10
-    control: EC2_EBS_ENCRYPTED
+    control: CONFIG_RECORDER_ENABLED
+    domain: Forensics Readiness
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for adversary technique mitigation
-      and detection
+    requirement: Record configuration changes.
   - id: MITRE-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Asset Context
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for adversary technique
-      mitigation and detection
+    requirement: Maintain context for detections.
   - id: MITRE-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Asset Context
     severity: LOW
     score: 1
-    requirement: Require Environment tag for adversary technique mitigation and detection
+    requirement: Identify environment context.
   - id: MITRE-L03
     control: OWNER_TAG_PRESENT
+    domain: Incident Response Context
     severity: LOW
     score: 1
-    requirement: Require Owner tag for adversary technique mitigation and detection
+    requirement: Identify responsible owner.
   - id: MITRE-L04
     control: PROJECT_TAG_PRESENT
+    domain: Asset Context
     severity: LOW
     score: 1
-    requirement: Require Project tag for adversary technique mitigation and detection
+    requirement: Identify application context.
   - id: MITRE-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for adversary technique mitigation
-      and detection
-  - id: MITRE-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Classify data storage resources for adversary technique mitigation
-      and detection
-  - id: MITRE-L07
     control: IAM_ROLE_EXISTS
+    domain: Credential Management
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for adversary technique mitigation
-      and detection
-  - id: MITRE-L08
+    requirement: Prefer role-based credentials.
+  - id: MITRE-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Credential Management
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for adversary technique mitigation
-      and detection
-  - id: MITRE-L09
+    requirement: Use instance profile credentials.
+  - id: MITRE-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Attack Surface Reduction
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for adversary
-      technique mitigation and detection
+    requirement: Avoid automatic public exposure.
+  - id: MITRE-L08
+    control: S3_VERSIONING_ENABLED
+    domain: Recovery
+    severity: LOW
+    score: 1
+    requirement: Enable recovery of modified objects.
+  - id: MITRE-L09
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Data Context
+    severity: LOW
+    score: 1
+    requirement: Classify sensitive storage for detections.
   - id: MITRE-L10
-    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Change Context
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for adversary technique
-      mitigation and detection
+    requirement: Identify IaC-managed resources.
   LGPD:
   - id: LGPD-H01
     control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Segurança dos Dados Pessoais
     severity: HIGH
     score: 5
-    requirement: Block public access to sensitive storage for Brazilian personal data
-      protection
+    requirement: Evitar exposição pública de dados pessoais.
   - id: LGPD-H02
     control: S3_ENCRYPTED
+    domain: Segurança dos Dados Pessoais
     severity: HIGH
     score: 5
-    requirement: Encrypt object storage at rest for Brazilian personal data protection
+    requirement: Criptografar dados pessoais em repouso.
   - id: LGPD-H03
     control: KMS_KEY_ROTATION_ENABLED
+    domain: Controles Criptográficos
     severity: HIGH
     score: 5
-    requirement: Enable KMS key rotation for Brazilian personal data protection
+    requirement: Rotacionar chaves usadas para proteger dados pessoais.
   - id: LGPD-H04
     control: IAM_NO_ADMIN_POLICY
+    domain: Controle de Acesso
     severity: HIGH
     score: 5
-    requirement: Prevent wildcard administrator IAM policies for Brazilian personal
-      data protection
+    requirement: Evitar permissões administrativas excessivas.
   - id: LGPD-H05
     control: CLOUDTRAIL_ENABLED
+    domain: Prestação de Contas
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for Brazilian personal data protection
+    requirement: Registrar ações administrativas e acessos.
   - id: LGPD-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for Brazilian personal data protection
-  - id: LGPD-H07
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Integridade de Evidências
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for Brazilian personal data
-      protection
+    requirement: Proteger a integridade dos registros.
+  - id: LGPD-H07
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Segurança dos Registros
+    severity: HIGH
+    score: 5
+    requirement: Criptografar trilhas de auditoria.
   - id: LGPD-H08
-    control: GUARDDUTY_ENABLED
+    control: SECRETS_MANAGER_SECRET_ENCRYPTED
+    domain: Proteção de Credenciais
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for Brazilian personal data protection
+    requirement: Criptografar segredos de aplicações.
   - id: LGPD-H09
     control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Redução de Superfície
     severity: HIGH
     score: 5
-    requirement: Prevent SSH exposure to the internet for Brazilian personal data
-      protection
+    requirement: Restringir acesso administrativo pela internet.
   - id: LGPD-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
+    control: BACKUP_VAULT_ENCRYPTED
+    domain: Continuidade e Recuperação
     severity: HIGH
     score: 5
-    requirement: Prevent RDP exposure to the internet for Brazilian personal data
-      protection
+    requirement: Criptografar cópias de segurança com dados pessoais.
   - id: LGPD-M01
     control: VPC_FLOW_LOGS_ENABLED
+    domain: Monitoramento
     severity: MEDIUM
     score: 3
-    requirement: Enable VPC network flow logging for Brazilian personal data protection
+    requirement: Registrar tráfego de rede relevante.
   - id: LGPD-M02
     control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Prestação de Contas
     severity: MEDIUM
     score: 3
-    requirement: Retain operational logs for at least 90 days for Brazilian personal
-      data protection
+    requirement: Reter logs para investigação.
   - id: LGPD-M03
     control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Segurança dos Registros
     severity: MEDIUM
     score: 3
-    requirement: Encrypt centralized logs for Brazilian personal data protection
+    requirement: Criptografar logs operacionais.
   - id: LGPD-M04
     control: BACKUP_PLAN_EXISTS
+    domain: Continuidade e Recuperação
     severity: MEDIUM
     score: 3
-    requirement: Define backup plan for Brazilian personal data protection
+    requirement: Definir plano de backup.
   - id: LGPD-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for Brazilian personal data protection
-  - id: LGPD-M06
     control: S3_VERSIONING_ENABLED
+    domain: Integridade e Recuperação
     severity: MEDIUM
     score: 3
-    requirement: Enable object versioning for Brazilian personal data protection
+    requirement: Habilitar versionamento de objetos.
+  - id: LGPD-M06
+    control: S3_OBJECT_LOCK_ENABLED
+    domain: Retenção e Integridade
+    severity: MEDIUM
+    score: 3
+    requirement: Usar retenção imutável quando aplicável.
   - id: LGPD-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for Brazilian personal data
-      protection
-  - id: LGPD-M08
     control: EC2_NO_PUBLIC_IP
+    domain: Redução de Exposição
     severity: MEDIUM
     score: 3
-    requirement: Prevent direct public IP exposure on compute for Brazilian personal
-      data protection
-  - id: LGPD-M09
+    requirement: Evitar exposição pública direta de processamento.
+  - id: LGPD-M08
     control: EC2_IMDSV2_REQUIRED
+    domain: Proteção de Credenciais
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for Brazilian personal data protection
-  - id: LGPD-M10
+    requirement: Exigir IMDSv2.
+  - id: LGPD-M09
     control: EC2_EBS_ENCRYPTED
+    domain: Segurança dos Dados Pessoais
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for Brazilian personal data protection
+    requirement: Criptografar armazenamento de compute.
+  - id: LGPD-M10
+    control: CONFIG_RECORDER_ENABLED
+    domain: Governança
+    severity: MEDIUM
+    score: 3
+    requirement: Registrar alterações de configuração.
   - id: LGPD-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Governança
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for Brazilian personal data
-      protection
+    requirement: Exigir metadados de governança.
   - id: LGPD-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Governança
     severity: LOW
     score: 1
-    requirement: Require Environment tag for Brazilian personal data protection
+    requirement: Identificar ambiente de processamento.
   - id: LGPD-L03
     control: OWNER_TAG_PRESENT
+    domain: Governança
     severity: LOW
     score: 1
-    requirement: Require Owner tag for Brazilian personal data protection
+    requirement: Identificar responsável pelo ativo.
   - id: LGPD-L04
     control: PROJECT_TAG_PRESENT
+    domain: Governança
     severity: LOW
     score: 1
-    requirement: Require Project tag for Brazilian personal data protection
+    requirement: Identificar contexto do tratamento.
   - id: LGPD-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for Brazilian personal data
-      protection
-  - id: LGPD-L06
     control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Classificação da Informação
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for Brazilian personal data protection
-  - id: LGPD-L07
+    requirement: Classificar armazenamento de dados pessoais.
+  - id: LGPD-L06
     control: IAM_ROLE_EXISTS
+    domain: Controle de Acesso
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for Brazilian personal data protection
-  - id: LGPD-L08
+    requirement: Usar papéis para acesso de serviços.
+  - id: LGPD-L07
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Controle de Acesso
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for Brazilian personal data protection
-  - id: LGPD-L09
+    requirement: Usar instance profile em compute.
+  - id: LGPD-L08
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Segurança de Rede
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for Brazilian
-      personal data protection
-  - id: LGPD-L10
+    requirement: Evitar atribuição automática de IP público.
+  - id: LGPD-L09
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Segurança de Rede
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for Brazilian personal
-      data protection
+    requirement: Restringir saída padrão para HTTPS.
+  - id: LGPD-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Governança de IaC
+    severity: LOW
+    score: 1
+    requirement: Identificar recursos gerenciados por Terraform.
   BACEN:
   - id: BACEN-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for Brazilian financial
-      sector cyber resilience
-  - id: BACEN-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for Brazilian financial sector cyber
-      resilience
-  - id: BACEN-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for Brazilian financial sector cyber resilience
-  - id: BACEN-H04
-    control: IAM_NO_ADMIN_POLICY
-    severity: HIGH
-    score: 5
-    requirement: Prevent wildcard administrator IAM policies for Brazilian financial
-      sector cyber resilience
-  - id: BACEN-H05
     control: CLOUDTRAIL_ENABLED
+    domain: Cybersecurity Policy and Auditability
     severity: HIGH
     score: 5
-    requirement: Enable centralized audit trail for Brazilian financial sector cyber
-      resilience
-  - id: BACEN-H06
+    requirement: Maintain audit trails for cloud environments.
+  - id: BACEN-H02
     control: CLOUDTRAIL_MULTI_REGION_ENABLED
+    domain: Cybersecurity Policy and Auditability
     severity: HIGH
     score: 5
-    requirement: Enable multi-region CloudTrail for Brazilian financial sector cyber
-      resilience
-  - id: BACEN-H07
+    requirement: Capture audit events across regions.
+  - id: BACEN-H03
     control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
+    domain: Cybersecurity Policy and Auditability
     severity: HIGH
     score: 5
-    requirement: Enable CloudTrail log file validation for Brazilian financial sector
-      cyber resilience
-  - id: BACEN-H08
+    requirement: Protect integrity of audit records.
+  - id: BACEN-H04
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Cybersecurity Policy and Auditability
+    severity: HIGH
+    score: 5
+    requirement: Encrypt audit trail records.
+  - id: BACEN-H05
     control: GUARDDUTY_ENABLED
+    domain: Cyber Resilience
     severity: HIGH
     score: 5
-    requirement: Enable threat detection service for Brazilian financial sector cyber
-      resilience
-  - id: BACEN-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent SSH exposure to the internet for Brazilian financial sector
-      cyber resilience
-  - id: BACEN-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent RDP exposure to the internet for Brazilian financial sector
-      cyber resilience
-  - id: BACEN-M01
+    requirement: Enable threat detection for cloud infrastructure.
+  - id: BACEN-H06
     control: VPC_FLOW_LOGS_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable VPC network flow logging for Brazilian financial sector cyber
-      resilience
-  - id: BACEN-M02
-    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
-    severity: MEDIUM
-    score: 3
-    requirement: Retain operational logs for at least 90 days for Brazilian financial
-      sector cyber resilience
-  - id: BACEN-M03
-    control: CLOUDWATCH_LOGS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt centralized logs for Brazilian financial sector cyber resilience
-  - id: BACEN-M04
+    domain: Cyber Resilience
+    severity: HIGH
+    score: 5
+    requirement: Record network traffic for detection and response.
+  - id: BACEN-H07
     control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for Brazilian financial sector cyber resilience
-  - id: BACEN-M05
+    domain: Business Continuity
+    severity: HIGH
+    score: 5
+    requirement: Define backup coverage for critical workloads.
+  - id: BACEN-H08
     control: BACKUP_VAULT_ENCRYPTED
+    domain: Business Continuity
+    severity: HIGH
+    score: 5
+    requirement: Encrypt backup repositories.
+  - id: BACEN-H09
+    control: IAM_NO_ADMIN_POLICY
+    domain: Access Governance
+    severity: HIGH
+    score: 5
+    requirement: Avoid excessive cloud administrative permissions.
+  - id: BACEN-H10
+    control: SECURITY_GROUP_NO_SSH_WORLD
+    domain: Cloud Security
+    severity: HIGH
+    score: 5
+    requirement: Prevent broad administrative exposure.
+  - id: BACEN-M01
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Cloud Data Protection
     severity: MEDIUM
     score: 3
-    requirement: Encrypt backup vault for Brazilian financial sector cyber resilience
+    requirement: Block public access to regulated data storage.
+  - id: BACEN-M02
+    control: S3_ENCRYPTED
+    domain: Cloud Data Protection
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt regulated data storage.
+  - id: BACEN-M03
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: Cloud Data Protection
+    severity: MEDIUM
+    score: 3
+    requirement: Rotate encryption keys.
+  - id: BACEN-M04
+    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Incident Response
+    severity: MEDIUM
+    score: 3
+    requirement: Retain logs for investigation.
+  - id: BACEN-M05
+    control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Incident Response
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt operational logs.
   - id: BACEN-M06
-    control: S3_VERSIONING_ENABLED
+    control: CONFIG_RECORDER_ENABLED
+    domain: Cloud Governance
     severity: MEDIUM
     score: 3
-    requirement: Enable object versioning for Brazilian financial sector cyber resilience
+    requirement: Record configuration changes.
   - id: BACEN-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for Brazilian financial sector
-      cyber resilience
-  - id: BACEN-M08
     control: EC2_NO_PUBLIC_IP
+    domain: Cloud Security
     severity: MEDIUM
     score: 3
-    requirement: Prevent direct public IP exposure on compute for Brazilian financial
-      sector cyber resilience
-  - id: BACEN-M09
+    requirement: Avoid direct compute exposure.
+  - id: BACEN-M08
     control: EC2_IMDSV2_REQUIRED
+    domain: Cloud Security
     severity: MEDIUM
     score: 3
-    requirement: Require IMDSv2 on compute instances for Brazilian financial sector
-      cyber resilience
-  - id: BACEN-M10
+    requirement: Protect instance credentials.
+  - id: BACEN-M09
     control: EC2_EBS_ENCRYPTED
+    domain: Cloud Data Protection
     severity: MEDIUM
     score: 3
-    requirement: Encrypt compute block storage for Brazilian financial sector cyber
-      resilience
+    requirement: Encrypt compute storage.
+  - id: BACEN-M10
+    control: ALB_DELETION_PROTECTION_ENABLED
+    domain: Operational Resilience
+    severity: MEDIUM
+    score: 3
+    requirement: Protect front-end components from accidental deletion.
   - id: BACEN-L01
     control: REQUIRED_TAGS_PRESENT
+    domain: Cloud Governance
     severity: LOW
     score: 1
-    requirement: Require governance tags on key resources for Brazilian financial
-      sector cyber resilience
+    requirement: Maintain governance metadata.
   - id: BACEN-L02
     control: ENVIRONMENT_TAG_PRESENT
+    domain: Cloud Governance
     severity: LOW
     score: 1
-    requirement: Require Environment tag for Brazilian financial sector cyber resilience
+    requirement: Identify environment.
   - id: BACEN-L03
     control: OWNER_TAG_PRESENT
+    domain: Cloud Governance
     severity: LOW
     score: 1
-    requirement: Require Owner tag for Brazilian financial sector cyber resilience
+    requirement: Identify accountable owner.
   - id: BACEN-L04
     control: PROJECT_TAG_PRESENT
+    domain: Cloud Governance
     severity: LOW
     score: 1
-    requirement: Require Project tag for Brazilian financial sector cyber resilience
+    requirement: Identify business service.
   - id: BACEN-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    control: IAM_ROLE_EXISTS
+    domain: Access Governance
     severity: LOW
     score: 1
-    requirement: Identify Terraform-managed resources for Brazilian financial sector
-      cyber resilience
+    requirement: Use IAM roles for workloads.
   - id: BACEN-L06
-    control: S3_CONFIDENTIAL_TAG_PRESENT
+    control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Access Governance
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for Brazilian financial sector cyber
-      resilience
+    requirement: Use instance profiles for compute.
   - id: BACEN-L07
-    control: IAM_ROLE_EXISTS
+    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Cloud Security
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for Brazilian financial sector cyber
-      resilience
+    requirement: Avoid automatic public exposure.
   - id: BACEN-L08
-    control: IAM_INSTANCE_PROFILE_EXISTS
+    control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Cloud Security
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for Brazilian financial sector
-      cyber resilience
+    requirement: Restrict default outbound communication.
   - id: BACEN-L09
-    control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
-    severity: LOW
-    score: 1
-    requirement: Disable automatic public IP assignment on private subnets for Brazilian
-      financial sector cyber resilience
-  - id: BACEN-L10
-    control: RESTRICTED_EGRESS_ONLY_HTTPS
-    severity: LOW
-    score: 1
-    requirement: Restrict default outbound traffic to HTTPS for Brazilian financial
-      sector cyber resilience
-  OPEN_FINANCE:
-  - id: OPEN_FINANCE-H01
-    control: S3_PUBLIC_BLOCK_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Block public access to sensitive storage for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-H02
-    control: S3_ENCRYPTED
-    severity: HIGH
-    score: 5
-    requirement: Encrypt object storage at rest for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-H03
-    control: KMS_KEY_ROTATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable KMS key rotation for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-H04
-    control: IAM_NO_ADMIN_POLICY
-    severity: HIGH
-    score: 5
-    requirement: Prevent wildcard administrator IAM policies for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-H05
-    control: CLOUDTRAIL_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable centralized audit trail for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-H06
-    control: CLOUDTRAIL_MULTI_REGION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable multi-region CloudTrail for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-H07
-    control: CLOUDTRAIL_LOG_VALIDATION_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable CloudTrail log file validation for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-H08
-    control: GUARDDUTY_ENABLED
-    severity: HIGH
-    score: 5
-    requirement: Enable threat detection service for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-H09
-    control: SECURITY_GROUP_NO_SSH_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent SSH exposure to the internet for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-H10
-    control: SECURITY_GROUP_NO_RDP_WORLD
-    severity: HIGH
-    score: 5
-    requirement: Prevent RDP exposure to the internet for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-M01
-    control: VPC_FLOW_LOGS_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable VPC network flow logging for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-M02
-    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
-    severity: MEDIUM
-    score: 3
-    requirement: Retain operational logs for at least 90 days for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-M03
-    control: CLOUDWATCH_LOGS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt centralized logs for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-M04
-    control: BACKUP_PLAN_EXISTS
-    severity: MEDIUM
-    score: 3
-    requirement: Define backup plan for Brazilian Open Finance security, privacy and
-      traceability
-  - id: OPEN_FINANCE-M05
-    control: BACKUP_VAULT_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt backup vault for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-M06
-    control: S3_VERSIONING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object versioning for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-M07
-    control: S3_LOGGING_ENABLED
-    severity: MEDIUM
-    score: 3
-    requirement: Enable object storage access logging for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-M08
-    control: EC2_NO_PUBLIC_IP
-    severity: MEDIUM
-    score: 3
-    requirement: Prevent direct public IP exposure on compute for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-M09
-    control: EC2_IMDSV2_REQUIRED
-    severity: MEDIUM
-    score: 3
-    requirement: Require IMDSv2 on compute instances for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-M10
-    control: EC2_EBS_ENCRYPTED
-    severity: MEDIUM
-    score: 3
-    requirement: Encrypt compute block storage for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-L01
-    control: REQUIRED_TAGS_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require governance tags on key resources for Brazilian Open Finance
-      security, privacy and traceability
-  - id: OPEN_FINANCE-L02
-    control: ENVIRONMENT_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Environment tag for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-L03
-    control: OWNER_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Owner tag for Brazilian Open Finance security, privacy and
-      traceability
-  - id: OPEN_FINANCE-L04
-    control: PROJECT_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Require Project tag for Brazilian Open Finance security, privacy
-      and traceability
-  - id: OPEN_FINANCE-L05
-    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
-    severity: LOW
-    score: 1
-    requirement: Identify Terraform-managed resources for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-L06
     control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Data Classification
     severity: LOW
     score: 1
-    requirement: Classify data storage resources for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-L07
+    requirement: Classify regulated storage.
+  - id: BACEN-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: Cloud Governance
+    severity: LOW
+    score: 1
+    requirement: Identify IaC-managed resources.
+  OPEN_FINANCE:
+  - id: OF-H01
+    control: API_GATEWAY_AUTHORIZER_CONFIGURED
+    domain: API Security and Authorization
+    severity: HIGH
+    score: 5
+    requirement: Require authorization controls on protected APIs.
+  - id: OF-H02
+    control: API_GATEWAY_ACCESS_LOGS_ENABLED
+    domain: API Traceability
+    severity: HIGH
+    score: 5
+    requirement: Enable API access logging.
+  - id: OF-H03
+    control: API_GATEWAY_XRAY_ENABLED
+    domain: API Traceability
+    severity: HIGH
+    score: 5
+    requirement: Enable distributed tracing for API calls.
+  - id: OF-H04
+    control: ACM_CERTIFICATE_EXISTS
+    domain: Transport Security
+    severity: HIGH
+    score: 5
+    requirement: Use managed TLS certificates.
+  - id: OF-H05
+    control: CLOUDTRAIL_ENABLED
+    domain: Auditability
+    severity: HIGH
+    score: 5
+    requirement: Maintain cloud control-plane audit logs.
+  - id: OF-H06
+    control: CLOUDTRAIL_KMS_ENCRYPTED
+    domain: Auditability
+    severity: HIGH
+    score: 5
+    requirement: Encrypt audit logs.
+  - id: OF-H07
+    control: IAM_NO_ADMIN_POLICY
+    domain: Access Governance
+    severity: HIGH
+    score: 5
+    requirement: Avoid excessive privileged access.
+  - id: OF-H08
+    control: SECRETS_MANAGER_SECRET_ENCRYPTED
+    domain: Client and Secret Protection
+    severity: HIGH
+    score: 5
+    requirement: Encrypt client secrets.
+  - id: OF-H09
+    control: SECRETS_MANAGER_ROTATION_ENABLED
+    domain: Client and Secret Protection
+    severity: HIGH
+    score: 5
+    requirement: Rotate client secrets.
+  - id: OF-H10
+    control: WAF_WEB_ACL_EXISTS
+    domain: API Perimeter Protection
+    severity: HIGH
+    score: 5
+    requirement: Use web application filtering for APIs.
+  - id: OF-M01
+    control: S3_ENCRYPTED
+    domain: Data Protection
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt consent and API-related storage.
+  - id: OF-M02
+    control: S3_PUBLIC_BLOCK_ENABLED
+    domain: Data Protection
+    severity: MEDIUM
+    score: 3
+    requirement: Prevent public exposure of API data storage.
+  - id: OF-M03
+    control: KMS_KEY_ROTATION_ENABLED
+    domain: Cryptography
+    severity: MEDIUM
+    score: 3
+    requirement: Rotate keys protecting regulated data.
+  - id: OF-M04
+    control: VPC_FLOW_LOGS_ENABLED
+    domain: Traceability
+    severity: MEDIUM
+    score: 3
+    requirement: Collect network flow telemetry.
+  - id: OF-M05
+    control: CLOUDWATCH_LOG_RETENTION_90_DAYS
+    domain: Traceability
+    severity: MEDIUM
+    score: 3
+    requirement: Retain operational logs.
+  - id: OF-M06
+    control: CLOUDWATCH_LOGS_ENCRYPTED
+    domain: Traceability
+    severity: MEDIUM
+    score: 3
+    requirement: Encrypt operational logs.
+  - id: OF-M07
+    control: LB_HTTPS_LISTENER
+    domain: Transport Security
+    severity: MEDIUM
+    score: 3
+    requirement: Expose services through HTTPS listeners.
+  - id: OF-M08
+    control: WAF_ASSOCIATED_TO_ALB
+    domain: API Perimeter Protection
+    severity: MEDIUM
+    score: 3
+    requirement: Associate WAF with public application entry points.
+  - id: OF-M09
+    control: CONFIG_RECORDER_ENABLED
+    domain: Governance
+    severity: MEDIUM
+    score: 3
+    requirement: Record configuration changes.
+  - id: OF-M10
+    control: BACKUP_PLAN_EXISTS
+    domain: Operational Resilience
+    severity: MEDIUM
+    score: 3
+    requirement: Maintain backup coverage.
+  - id: OF-L01
+    control: REQUIRED_TAGS_PRESENT
+    domain: Governance
+    severity: LOW
+    score: 1
+    requirement: Require governance metadata.
+  - id: OF-L02
+    control: ENVIRONMENT_TAG_PRESENT
+    domain: Governance
+    severity: LOW
+    score: 1
+    requirement: Identify API environment.
+  - id: OF-L03
+    control: OWNER_TAG_PRESENT
+    domain: Governance
+    severity: LOW
+    score: 1
+    requirement: Identify accountable owner.
+  - id: OF-L04
+    control: PROJECT_TAG_PRESENT
+    domain: Governance
+    severity: LOW
+    score: 1
+    requirement: Identify Open Finance service context.
+  - id: OF-L05
     control: IAM_ROLE_EXISTS
+    domain: Access Governance
     severity: LOW
     score: 1
-    requirement: Use IAM roles for service access for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-L08
+    requirement: Use role-based workload access.
+  - id: OF-L06
     control: IAM_INSTANCE_PROFILE_EXISTS
+    domain: Access Governance
     severity: LOW
     score: 1
-    requirement: Attach instance profile to compute for Brazilian Open Finance security,
-      privacy and traceability
-  - id: OPEN_FINANCE-L09
+    requirement: Use instance profiles.
+  - id: OF-L07
     control: PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING
+    domain: Network Security
     severity: LOW
     score: 1
-    requirement: Disable automatic public IP assignment on private subnets for Brazilian
-      Open Finance security, privacy and traceability
-  - id: OPEN_FINANCE-L10
+    requirement: Avoid automatic public exposure.
+  - id: OF-L08
     control: RESTRICTED_EGRESS_ONLY_HTTPS
+    domain: Network Security
     severity: LOW
     score: 1
-    requirement: Restrict default outbound traffic to HTTPS for Brazilian Open Finance
-      security, privacy and traceability
+    requirement: Restrict outbound traffic.
+  - id: OF-L09
+    control: S3_CONFIDENTIAL_TAG_PRESENT
+    domain: Data Classification
+    severity: LOW
+    score: 1
+    requirement: Classify regulated API data storage.
+  - id: OF-L10
+    control: MANAGED_BY_TERRAFORM_TAG_PRESENT
+    domain: IaC Governance
+    severity: LOW
+    score: 1
+    requirement: Identify Terraform-managed resources.

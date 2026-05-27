@@ -1,151 +1,205 @@
 controls:
   S3_PUBLIC_BLOCK_ENABLED:
-    title: S3 Public Block Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      S3 Public Block Enabled.'
+    title: S3 public access block enabled
+    description: Ensures S3 public access block settings are enabled.
     check: s3_public_block_enabled
   S3_ENCRYPTED:
-    title: S3 Encrypted
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      S3 Encrypted.'
+    title: S3 server-side encryption enabled
+    description: Ensures S3 buckets use server-side encryption.
     check: s3_encrypted
-  KMS_KEY_ROTATION_ENABLED:
-    title: Kms Key Rotation Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Kms Key Rotation Enabled.'
-    check: kms_key_rotation_enabled
-  IAM_NO_ADMIN_POLICY:
-    title: Iam No Admin Policy
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Iam No Admin Policy.'
-    check: iam_no_admin_policy
-  CLOUDTRAIL_ENABLED:
-    title: Cloudtrail Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Cloudtrail Enabled.'
-    check: cloudtrail_enabled
-  CLOUDTRAIL_MULTI_REGION_ENABLED:
-    title: Cloudtrail Multi Region Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Cloudtrail Multi Region Enabled.'
-    check: cloudtrail_multi_region_enabled
-  CLOUDTRAIL_LOG_VALIDATION_ENABLED:
-    title: Cloudtrail Log Validation Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Cloudtrail Log Validation Enabled.'
-    check: cloudtrail_log_validation_enabled
-  GUARDDUTY_ENABLED:
-    title: Guardduty Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Guardduty Enabled.'
-    check: guardduty_enabled
-  SECURITY_GROUP_NO_SSH_WORLD:
-    title: Security Group No Ssh World
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Security Group No Ssh World.'
-    check: security_group_no_ssh_world
-  SECURITY_GROUP_NO_RDP_WORLD:
-    title: Security Group No Rdp World
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Security Group No Rdp World.'
-    check: security_group_no_rdp_world
-  VPC_FLOW_LOGS_ENABLED:
-    title: Vpc Flow Logs Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Vpc Flow Logs Enabled.'
-    check: vpc_flow_logs_enabled
-  CLOUDWATCH_LOG_RETENTION_90_DAYS:
-    title: Cloudwatch Log Retention 90 Days
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Cloudwatch Log Retention 90 Days.'
-    check: cloudwatch_log_retention_90_days
-  CLOUDWATCH_LOGS_ENCRYPTED:
-    title: Cloudwatch Logs Encrypted
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Cloudwatch Logs Encrypted.'
-    check: cloudwatch_logs_encrypted
-  BACKUP_PLAN_EXISTS:
-    title: Backup Plan Exists
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Backup Plan Exists.'
-    check: backup_plan_exists
-  BACKUP_VAULT_ENCRYPTED:
-    title: Backup Vault Encrypted
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Backup Vault Encrypted.'
-    check: backup_vault_encrypted
+  S3_BUCKET_KEY_ENABLED:
+    title: S3 bucket key enabled for KMS encryption
+    description: Ensures S3 KMS bucket keys are enabled to optimize KMS usage.
+    check: s3_bucket_key_enabled
   S3_VERSIONING_ENABLED:
-    title: S3 Versioning Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      S3 Versioning Enabled.'
+    title: S3 versioning enabled
+    description: Ensures S3 object versioning is enabled.
     check: s3_versioning_enabled
   S3_LOGGING_ENABLED:
-    title: S3 Logging Enabled
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      S3 Logging Enabled.'
+    title: S3 access logging enabled
+    description: Ensures S3 server access logging is configured.
     check: s3_logging_enabled
-  EC2_NO_PUBLIC_IP:
-    title: Ec2 No Public Ip
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Ec2 No Public Ip.'
-    check: ec2_no_public_ip
-  EC2_IMDSV2_REQUIRED:
-    title: Ec2 Imdsv2 Required
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Ec2 Imdsv2 Required.'
-    check: ec2_imdsv2_required
-  EC2_EBS_ENCRYPTED:
-    title: Ec2 Ebs Encrypted
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Ec2 Ebs Encrypted.'
-    check: ec2_ebs_encrypted
-  REQUIRED_TAGS_PRESENT:
-    title: Required Tags Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Required Tags Present.'
-    check: required_tags_present
-  ENVIRONMENT_TAG_PRESENT:
-    title: Environment Tag Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Environment Tag Present.'
-    check: environment_tag_present
-  OWNER_TAG_PRESENT:
-    title: Owner Tag Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Owner Tag Present.'
-    check: owner_tag_present
-  PROJECT_TAG_PRESENT:
-    title: Project Tag Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Project Tag Present.'
-    check: project_tag_present
-  MANAGED_BY_TERRAFORM_TAG_PRESENT:
-    title: Managed By Terraform Tag Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Managed By Terraform Tag Present.'
-    check: managed_by_terraform_tag_present
+  S3_OBJECT_LOCK_ENABLED:
+    title: S3 object lock enabled
+    description: Ensures immutable retention controls are configured for S3.
+    check: s3_object_lock_enabled
   S3_CONFIDENTIAL_TAG_PRESENT:
-    title: S3 Confidential Tag Present
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      S3 Confidential Tag Present.'
+    title: S3 confidentiality tag present
+    description: Ensures S3 buckets are explicitly classified with a confidentiality tag.
     check: s3_confidential_tag_present
+  KMS_KEY_ROTATION_ENABLED:
+    title: KMS key rotation enabled
+    description: Ensures customer-managed KMS keys use key rotation.
+    check: kms_key_rotation_enabled
+  SECRETS_MANAGER_SECRET_ENCRYPTED:
+    title: Secrets Manager secret encrypted with KMS
+    description: Ensures secrets are protected with explicit KMS encryption.
+    check: secrets_manager_secret_encrypted
+  SECRETS_MANAGER_ROTATION_ENABLED:
+    title: Secrets Manager rotation enabled
+    description: Ensures secrets have automatic rotation configured.
+    check: secrets_manager_rotation_enabled
   IAM_ROLE_EXISTS:
-    title: Iam Role Exists
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Iam Role Exists.'
+    title: IAM role exists for workload access
+    description: Ensures workloads use IAM roles instead of static credentials.
     check: iam_role_exists
   IAM_INSTANCE_PROFILE_EXISTS:
-    title: Iam Instance Profile Exists
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Iam Instance Profile Exists.'
+    title: IAM instance profile exists
+    description: Ensures EC2 workloads receive permissions through an instance profile.
     check: iam_instance_profile_exists
+  IAM_NO_ADMIN_POLICY:
+    title: No wildcard administrator IAM policy
+    description: Detects wildcard administrator IAM policies.
+    check: iam_no_admin_policy
+  CLOUDTRAIL_ENABLED:
+    title: CloudTrail enabled
+    description: Ensures AWS API activity logging is enabled.
+    check: cloudtrail_enabled
+  CLOUDTRAIL_MULTI_REGION_ENABLED:
+    title: CloudTrail multi-region enabled
+    description: Ensures CloudTrail captures events across regions.
+    check: cloudtrail_multi_region_enabled
+  CLOUDTRAIL_LOG_VALIDATION_ENABLED:
+    title: CloudTrail log file validation enabled
+    description: Ensures CloudTrail log integrity validation is enabled.
+    check: cloudtrail_log_validation_enabled
+  CLOUDTRAIL_KMS_ENCRYPTED:
+    title: CloudTrail encrypted with KMS
+    description: Ensures CloudTrail logs are encrypted with KMS.
+    check: cloudtrail_kms_encrypted
+  GUARDDUTY_ENABLED:
+    title: GuardDuty enabled
+    description: Ensures threat detection is enabled.
+    check: guardduty_enabled
+  CONFIG_RECORDER_ENABLED:
+    title: AWS Config recorder enabled
+    description: Ensures configuration change recording is enabled.
+    check: config_recorder_enabled
+  VPC_FLOW_LOGS_ENABLED:
+    title: VPC Flow Logs enabled
+    description: Ensures network flow logs are enabled.
+    check: vpc_flow_logs_enabled
+  CLOUDWATCH_LOG_RETENTION_90_DAYS:
+    title: CloudWatch log retention at least 90 days
+    description: Ensures CloudWatch log groups retain logs for at least 90 days.
+    check: cloudwatch_log_retention_90_days
+  CLOUDWATCH_LOGS_ENCRYPTED:
+    title: CloudWatch logs encrypted
+    description: Ensures CloudWatch log groups use KMS encryption.
+    check: cloudwatch_logs_encrypted
+  BACKUP_PLAN_EXISTS:
+    title: AWS Backup plan exists
+    description: Ensures an AWS Backup plan is defined.
+    check: backup_plan_exists
+  BACKUP_VAULT_ENCRYPTED:
+    title: AWS Backup vault encrypted
+    description: Ensures backup vaults use KMS encryption.
+    check: backup_vault_encrypted
+  EC2_NO_PUBLIC_IP:
+    title: EC2 instances without public IP
+    description: Ensures EC2 instances are not directly exposed with public IPs.
+    check: ec2_no_public_ip
+  EC2_IMDSV2_REQUIRED:
+    title: EC2 IMDSv2 required
+    description: Ensures EC2 instances require IMDSv2.
+    check: ec2_imdsv2_required
+  EC2_EBS_ENCRYPTED:
+    title: EC2 root EBS volume encrypted
+    description: Ensures EC2 root block devices are encrypted.
+    check: ec2_ebs_encrypted
+  SECURITY_GROUP_NO_SSH_WORLD:
+    title: Security groups do not expose SSH to the internet
+    description: Detects SSH exposure to 0.0.0.0/0.
+    check: security_group_no_ssh_world
+  SECURITY_GROUP_NO_RDP_WORLD:
+    title: Security groups do not expose RDP to the internet
+    description: Detects RDP exposure to 0.0.0.0/0.
+    check: security_group_no_rdp_world
   PRIVATE_SUBNET_NO_PUBLIC_IP_MAPPING:
-    title: Private Subnet No Public Ip Mapping
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Private Subnet No Public Ip Mapping.'
+    title: Private subnets do not auto-assign public IPs
+    description: Ensures private subnets disable automatic public IP assignment.
     check: private_subnet_no_public_ip_mapping
   RESTRICTED_EGRESS_ONLY_HTTPS:
-    title: Restricted Egress Only Https
-    description: 'Evaluates whether the Terraform plan satisfies the technical control:
-      Restricted Egress Only Https.'
+    title: Security group egress restricted to HTTPS
+    description: Ensures internet egress is restricted to HTTPS only.
     check: restricted_egress_only_https
+  ALB_DELETION_PROTECTION_ENABLED:
+    title: ALB deletion protection enabled
+    description: Ensures load balancers have deletion protection enabled.
+    check: alb_deletion_protection_enabled
+  LB_HTTPS_LISTENER:
+    title: Load balancer HTTPS listener configured
+    description: Ensures load balancers expose HTTPS listeners.
+    check: lb_https_listener
+  WAF_WEB_ACL_EXISTS:
+    title: AWS WAF web ACL exists
+    description: Ensures a WAF web ACL is configured.
+    check: waf_web_acl_exists
+  WAF_ASSOCIATED_TO_ALB:
+    title: AWS WAF associated to ALB
+    description: Ensures WAF is associated with the application load balancer.
+    check: waf_associated_to_alb
+  API_GATEWAY_ACCESS_LOGS_ENABLED:
+    title: API Gateway access logs enabled
+    description: Ensures API Gateway access logging is configured.
+    check: api_gateway_access_logs_enabled
+  API_GATEWAY_XRAY_ENABLED:
+    title: API Gateway X-Ray tracing enabled
+    description: Ensures API Gateway X-Ray tracing is enabled.
+    check: api_gateway_xray_enabled
+  API_GATEWAY_AUTHORIZER_CONFIGURED:
+    title: API Gateway authorizer configured
+    description: Ensures API Gateway authorization is configured.
+    check: api_gateway_authorizer_configured
+  ACM_CERTIFICATE_EXISTS:
+    title: ACM certificate exists
+    description: Ensures managed TLS certificates are provisioned.
+    check: acm_certificate_exists
+  RDS_ENCRYPTED:
+    title: RDS storage encrypted
+    description: Ensures RDS database storage is encrypted.
+    check: rds_encrypted
+  RDS_BACKUP_RETENTION_ENABLED:
+    title: RDS backup retention enabled
+    description: Ensures RDS backup retention is configured.
+    check: rds_backup_retention_enabled
+  RDS_DELETION_PROTECTION_ENABLED:
+    title: RDS deletion protection enabled
+    description: Ensures RDS deletion protection is enabled.
+    check: rds_deletion_protection_enabled
+  ECR_SCAN_ON_PUSH_ENABLED:
+    title: ECR scan on push enabled
+    description: Ensures container images are scanned on push.
+    check: ecr_scan_on_push_enabled
+  ECR_IMAGE_TAG_IMMUTABLE:
+    title: ECR image tags immutable
+    description: Ensures container image tags are immutable.
+    check: ecr_image_tag_immutable
+  SNS_ENCRYPTED:
+    title: SNS topic encrypted
+    description: Ensures SNS topics are encrypted.
+    check: sns_encrypted
+  SQS_ENCRYPTED:
+    title: SQS queue encrypted
+    description: Ensures SQS queues are encrypted.
+    check: sqs_encrypted
+  REQUIRED_TAGS_PRESENT:
+    title: Required governance tags present
+    description: Ensures key resources include required governance tags.
+    check: required_tags_present
+  ENVIRONMENT_TAG_PRESENT:
+    title: Environment tag present
+    description: Ensures Environment tag is present on compute resources.
+    check: environment_tag_present
+  OWNER_TAG_PRESENT:
+    title: Owner tag present
+    description: Ensures Owner tag is present on compute resources.
+    check: owner_tag_present
+  PROJECT_TAG_PRESENT:
+    title: Project tag present
+    description: Ensures Project tag is present on compute resources.
+    check: project_tag_present
+  MANAGED_BY_TERRAFORM_TAG_PRESENT:
+    title: ManagedBy Terraform tag present
+    description: Ensures Terraform-managed resources are explicitly identified.
+    check: managed_by_terraform_tag_present
