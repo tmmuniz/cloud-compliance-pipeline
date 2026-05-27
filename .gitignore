@@ -1,0 +1,9 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan.json
+reports/*.json
+reports/*.html
+.DS_Store
+__pycache__/
