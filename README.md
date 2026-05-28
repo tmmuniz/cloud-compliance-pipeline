@@ -356,8 +356,13 @@ The pipeline generates a centralized HTML report containing:
 * Status
 * Compliance score
 
----
+<img src="printscreen/head.png" alt="HTML Page" width="900">
+<img src="printscreen/control.png" alt="HTML Page" width="900">
+<img src="printscreen/control2.png" alt="HTML Page" width="900">
+<img src="printscreen/detail1.png" alt="HTML Page" width="900">
+<img src="printscreen/detail2.png" alt="HTML Page" width="900">
 
+---
 # Future Improvements
 
 * Multi-cloud support
