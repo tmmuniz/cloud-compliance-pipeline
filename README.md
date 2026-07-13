@@ -30,13 +30,9 @@ The solution analyzes **Terraform** execution plans for **AWS** environments and
 
 # Main Features
 
-## Compliance-as-Code
+**Compliance-as-Code**: Reusable security and governance controls implemented through centralized OPA/Rego policies.
 
-Reusable security and governance controls implemented through centralized OPA/Rego policies.
-
-## Policy-as-Code
-
-Security requirements are codified and automatically validated during CI/CD execution.
+**Policy-as-Code**: Security requirements are codified and automatically validated during CI/CD execution.
 
 ---
 
@@ -69,28 +65,6 @@ JSON Evidence & HTML Compliance Report
       ↓
 S3 Administrative Bucket
 ```
-
----
-
-# Main Capabilities
-
-## Terraform Security Analysis
-
-The pipeline evaluates Terraform plans before deployment.
-
-Examples:
-
-* Public exposure detection
-* IAM privilege escalation
-* Missing encryption
-* Missing CloudTrail
-* Public Security Groups
-* Missing VPC Flow Logs
-* Missing GuardDuty
-* Missing KMS rotation
-* Missing backup plans
-* Missing IMDSv2
-
 ---
 
 # Example Controls
@@ -227,8 +201,6 @@ GDPR,NIST_CSF,PCI_DSS
 
 Using GitHub Actions manual inputs.
 
----
-
 ## 2. Terraform Plan Generation
 
 The workflow generates the Terraform execution plan:
@@ -239,13 +211,9 @@ terraform plan
 terraform show -json tfplan > tfplan.json
 ```
 
----
-
 ## 3. OPA/Rego Evaluation
 
 OPA evaluates the Terraform plan against all technical controls.
-
----
 
 ## 4. Framework
 
@@ -259,8 +227,6 @@ Benefits:
 * Independent scoring
 * More realistic audit behavior
 
----
-
 ## 5. JSON Evidence Generation
 
 Each framework generates its own evidence file:
@@ -271,8 +237,6 @@ reports/results-pci-dss.json
 reports/results-lgpd.json
 ```
 
----
-
 ## 6. Result Consolidation
 
 All framework results are merged into:
@@ -281,8 +245,6 @@ All framework results are merged into:
 reports/results.json
 ```
 
----
-
 ## 7. HTML Report Generation
 
 The consolidated report is transformed into:
@@ -290,8 +252,6 @@ The consolidated report is transformed into:
 ```text
 reports/compliance-report.html
 ```
-
----
 
 ## 8. Administrative Evidence Upload
 
@@ -326,21 +286,13 @@ Settings → Secrets and variables → Actions
 
 # Security Practices
 
-## OIDC Federation
+**OIDC Federation**: The workflow uses AWS OIDC federation to avoid long-lived credentials.
 
-The workflow uses AWS OIDC federation to avoid long-lived credentials.
+**Secure Terraform Backend**: Terraform state is stored securely in S3.
 
-## Secure Terraform Backend
+**Shift Left Security**: Compliance validation happens before infrastructure deployment.
 
-Terraform state is stored securely in S3.
-
-## Shift Left Security
-
-Compliance validation happens before infrastructure deployment.
-
-## Immutable Evidence Storage
-
-Audit evidence is uploaded to S3 for retention and traceability.
+**Immutable Evidence Storage**: Audit evidence is uploaded to S3 for retention and traceability.
 
 ---
 
@@ -367,9 +319,4 @@ The pipeline generates a centralized HTML report containing:
 
 * Multi-cloud support
 * Kubernetes/K8s controls
-* CIS Benchmark integration
-* Security exception workflows
-* Dashboard visualization
-* Compliance APIs
 * Real-time notifications
-* Compliance-as-Code
